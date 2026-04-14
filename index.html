@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ADAM — AI Agents voor spraak, chat en workflow automatisering</title>
+  <meta name="description" content="ADAM bouwt autonome AI agents die telefoongesprekken voeren, klanten helpen en processen automatiseren. Geen scripts. Geen menu's. Gewoon een gesprek."/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{--blue:#1D2ED8;--yellow:#CEFF1A;--black:#0A0A0A;--white:#FFFFFF;--gray:#E5E7EB;--gray-mid:#9CA3AF;}
+    body{font-family:'Sora',sans-serif;background:var(--white);color:var(--black);overflow-x:hidden;}
+
+    /* NAV */
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:0 60px;height:72px;position:fixed;top:0;left:0;right:0;z-index:25;}    .nav-logo{display:flex;align-items:center;gap:0px;text-decoration:none;}
+    .nav-logo-text{font-size:17px;font-weight:800;color:#fff;letter-spacing:0.05em;}
+    .nav-right{display:flex;align-items:center;gap:6px;}
+    .nav-link{color:rgba(255,255,255,0.7);font-size:14px;font-weight:600;text-decoration:none;padding:9px 18px;border-radius:3px;transition:color 0.2s;}
+    .nav-link:hover{color:#CEFF1A;}
+    .nav-cta{background:var(--yellow);color:var(--black);font-family:'Sora',sans-serif;font-size:14px;font-weight:700;padding:10px 22px;border-radius:3px;text-decoration:none;transition:background 0.2s,color 0.2s;}
+    .nav-cta:hover{background:var(--gray);color:var(--black);}
+    .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;z-index:30;}
+    .nav-hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all 0.3s;}
+    .nav-menu{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;background:#0A0A0A;padding:0px 24px 28px;gap:0;z-index:24;opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
+    .nav-menu.open{opacity:1;pointer-events:auto;}
+    .nav-menu a{font-size:16px;font-weight:600;color:rgba(255,255,255,0.7);text-decoration:none;padding:16px 0;border:none;}
+    .nav-menu a:last-child{color:var(--yellow);margin-top:8px;}
+    .nav{transition:background 0.25s ease;}
+    .nav.nav-dark{background:#0A0A0A;border-bottom:none !important;}
+
+    /* HERO */
+    .hero{position:relative;width:100%;height:640px;overflow:hidden;cursor:none;padding-top:72px;}
+    .hero canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
+    .hero-cursor{position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.9);pointer-events:none;transform:translate(-50%,-50%);z-index:15;opacity:0;transition:opacity 0.3s;}
+    .hero-content{position:absolute;bottom:72px;left:60px;right:60px;z-index:5;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-end;gap:60px;}
+    .hero-left{max-width:700px;}
+    .hero-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:10px;margin-left:7px;}
+    .hero-title{font-size:clamp(44px,4vw,92px);font-weight:800;color:#fff;line-height:1.05;letter-spacing:-0.04em;}
+    .hero-title .line{display:block;overflow:hidden;}
+    .hero-title .line span{display:block;opacity:0;transform:translateY(100%);animation:lineUp 1.1s cubic-bezier(0.16,1,0.3,1) forwards;}
+    .hero-title .line:nth-child(1) span{animation-delay:0.5s;}
+    .hero-title .line:nth-child(2) span{animation-delay:0.72s;}
+    .hero-title .line:nth-child(3) span{animation-delay:0.94s;}
+    .hero-right{text-align:right;flex-shrink:0;}
+    .hero-sub{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;max-width:300px;text-align:right;margin-bottom:20px;}
+    .hero-cta{display:inline-block;background:var(--yellow);color:var(--black);font-family:'Sora',sans-serif;font-size:14px;font-weight:700;padding:13px 28px;border-radius:3px;text-decoration:none;transition:background 0.2s;pointer-events:auto;}
+    .hero-cta:hover{background:rgba(255,255,255,0.7);}
+    .hero-label{opacity:0;transform:translateY(12px);animation:fadeUp 1.1s ease 0.3s forwards;}
+    @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+    @keyframes lineUp{to{opacity:1;transform:translateY(0);}}
+
+    /* TRUST BAR */
+    .trust-bar{background:var(--black);padding:20px 60px;display:flex;align-items:center;justify-content:space-between;gap:32px;}
+    .trust-bar-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);white-space:nowrap;flex-shrink:0;}
+    .trust-items{display:flex;align-items:center;gap:40px;flex-wrap:wrap;}
+    .trust-item{font-size:13px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:0.02em;}
+
+    /* SHARED */
+    .section{padding:96px 60px;}
+    .section-sm{padding:72px 60px;}
+    .inner{max-width:1200px;margin:0 auto;}
+    .section-label{font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:28px;}
+    .section-label-white{font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:28px;}
+
+    /* PROBLEM / INTRO */
+    .intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:start;}
+    .intro-title{font-size:clamp(28px,3.5vw,46px);font-weight:800;line-height:0.97;letter-spacing:-0.03em;margin-bottom:32px;}
+    .intro-title em{font-style:normal;color:var(--blue);}
+    .intro-body p{font-size:16px;font-weight:400;line-height:1.8;color:#555;margin-bottom:20px;}
+    .intro-body p:last-child{margin-bottom:0;}
+    .intro-link{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--blue);text-decoration:none;margin-top:28px;transition:gap 0.2s;}
+    .intro-link:hover{gap:12px;}
+
+    /* STAT ROW */
+    .stat-row{display:flex;gap:0;margin-top:56px;border-top:1px solid var(--gray);}
+    .stat-item{flex:1;padding:28px 0 0;border-right:1px solid var(--gray);}
+    .stat-item:last-child{border-right:none;}
+    .stat-item:not(:first-child){padding-left:32px;}
+    .stat-num{font-size:40px;font-weight:800;letter-spacing:-0.04em;color:var(--blue);line-height:1;}
+    .stat-lbl{font-size:12px;font-weight:400;color:var(--gray-mid);margin-top:6px;line-height:1.4;}
+
+    /* USE CASES */
+    .cases-bg{background:#F8F8F8;padding:96px 60px;}
+    .cases-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:56px;}
+    .cases-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;letter-spacing:-0.03em;line-height:0.97;max-width:480px;}
+    .cases-intro{font-size:15px;color:#666;line-height:1.7;max-width:340px;text-align:right;}
+    .cases-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;}
+    .case-card{background:var(--white);padding:44px 40px;transition:background 0.2s;}
+    .case-card:hover{background:#f0f0f0;}
+    .case-card-num{font-size:11px;font-weight:700;letter-spacing:0.12em;color:var(--gray-mid);margin-bottom:20px;}
+    .case-card-title{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:14px;}
+    .case-card-body{font-size:14px;color:#666;line-height:1.7;margin-bottom:24px;}
+    .case-card-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue);background:rgba(29,46,216,0.08);padding:5px 12px;border-radius:2px;}
+
+    /* HOW IT WORKS */
+    .how-header{margin-bottom:56px;}
+    .how-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;letter-spacing:-0.03em;line-height:0.97;}
+    .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--gray);border:1px solid var(--gray);}
+    .how-tile{background:var(--white);padding:40px 32px;}
+    .how-num{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:24px;letter-spacing:0.12em;}
+    .how-tile-title{font-size:19px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px;}
+    .how-tile-body{font-size:14px;color:#666;line-height:1.7;}
+
+    /* CAPABILITIES */
+    .cap-section{background:var(--black);padding:96px 60px;}
+    .cap-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:56px;}
+    .cap-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:0.97;max-width:420px;}
+    .cap-sub{font-size:15px;color:rgba(255,255,255,0.45);line-height:1.7;max-width:320px;text-align:right;}
+    .cap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+    .cap-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:32px 24px;transition:transform 0.25s ease,border-color 0.25s ease,background 0.25s ease;}
+    .cap-card:hover{transform:translateY(-4px);border-color:rgba(206,255,26,0.3);background:rgba(255,255,255,0.07);}
+    .cap-tag{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:18px;}
+    .cap-name{font-size:17px;font-weight:800;color:#fff;margin-bottom:10px;letter-spacing:-0.01em;}
+    .cap-desc{font-size:13px;color:rgba(255,255,255,0.48);line-height:1.65;}
+
+    /* INTEGRATIONS */
+    .int-section{padding:96px 60px;background:var(--white);}
+    .int-grid{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center;}
+    .int-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;letter-spacing:-0.03em;line-height:0.97;margin-bottom:24px;}
+    .int-body{font-size:16px;color:#555;line-height:1.8;margin-bottom:32px;}
+    .int-tags{display:flex;flex-wrap:wrap;gap:10px;}
+    .int-tag{font-size:12px;font-weight:600;color:var(--black);background:var(--gray);padding:7px 14px;border-radius:3px;}
+    .int-right{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .int-card{background:#F8F8F8;border-radius:4px;padding:24px;border-left:3px solid var(--blue);}
+    .int-card-title{font-size:14px;font-weight:800;margin-bottom:6px;}
+    .int-card-body{font-size:13px;color:#666;line-height:1.6;}
+
+    /* SOCIAL PROOF */
+    .proof-section{background:var(--blue);padding:96px 60px;}
+    .proof-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+    .proof-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:0.97;margin-bottom:32px;}
+    .proof-body{font-size:16px;color:rgba(255,255,255,0.65);line-height:1.8;margin-bottom:36px;}
+    .proof-cta{display:inline-block;background:var(--yellow);color:var(--black);font-family:'Sora',sans-serif;font-size:14px;font-weight:700;padding:14px 32px;border-radius:3px;text-decoration:none;transition:background 0.2s;}
+    .proof-cta:hover{background:var(--gray);}
+    .proof-cards{display:flex;flex-direction:column;gap:14px;}
+    .proof-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:28px;transition:transform 0.25s,border-color 0.25s,background 0.25s;}
+    .proof-card:hover{transform:translateY(-3px);border-color:rgba(206,255,26,0.35);background:rgba(255,255,255,0.1);}
+    .proof-card-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;}
+    .proof-card-body{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;}
+    .proof-card-meta{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--yellow);margin-top:16px;}
+
+    /* WORK */
+    .work-section{padding:96px 60px;}
+    .work-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0;}
+    .work-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;letter-spacing:-0.03em;line-height:0.97;}
+    .work-all{font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;transition:opacity 0.2s;}
+    .work-all:hover{opacity:0.7;}
+    .work-list{border-top:1px solid var(--gray);margin-top:40px;}
+    .work-row{display:grid;grid-template-columns:48px 1fr 200px auto 28px;align-items:center;gap:28px;padding:28px 0;border-bottom:1px solid var(--gray);cursor:pointer;transition:padding-left 0.2s;}
+    .work-row:hover{padding-left:10px;}
+    .work-row:hover .work-arr{transform:translateX(4px);}
+    .work-idx{font-size:12px;color:var(--gray-mid);font-weight:600;}
+    .work-name{font-size:22px;font-weight:800;letter-spacing:-0.02em;}
+    .work-desc{font-size:13px;color:var(--gray-mid);}
+    .work-yr{font-size:13px;color:var(--gray-mid);}
+    .work-arr{font-size:17px;transition:transform 0.2s;}
+
+    /* CTA FINAL */
+    .cta-section{background:var(--black);padding:120px 60px;text-align:center;position:relative;overflow:hidden;}
+    .cta-bg-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+    .cta-inner{position:relative;z-index:1;max-width:640px;margin:0 auto;}
+    .cta-lbl{font-size:12px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:24px;}
+    .cta-title{font-size:clamp(38px,6vw,74px);font-weight:800;color:#fff;line-height:0.92;letter-spacing:-0.04em;margin-bottom:20px;}
+    .cta-sub{font-size:16px;color:rgba(255,255,255,0.48);line-height:1.7;margin-bottom:40px;max-width:480px;margin-left:auto;margin-right:auto;}
+    .cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .cta-btn-primary{display:inline-block;background:var(--yellow);color:var(--black);font-family:'Sora',sans-serif;font-size:15px;font-weight:700;padding:15px 36px;border-radius:3px;text-decoration:none;transition:background 0.2s;}
+    .cta-btn-primary:hover{background:#E5E7EB;}
+    .cta-btn-secondary{display:inline-block;background:transparent;color:rgba(255,255,255,0.6);font-family:'Sora',sans-serif;font-size:15px;font-weight:600;padding:15px 36px;border-radius:3px;text-decoration:none;border:1px solid rgba(255,255,255,0.15);transition:border-color 0.2s,color 0.2s;}
+    .cta-btn-secondary:hover{border-color:rgba(255,255,255,0.4);color:#fff;}
+    .cta-micro{font-size:12px;color:rgba(255,255,255,0.3);margin-top:16px;}
+
+    /* FOOTER */
+    footer{display:flex;align-items:center;justify-content:space-between;padding:28px 60px;border-top:1px solid var(--gray);}
+    .foot-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+    .foot-logo-text{font-size:14px;font-weight:800;letter-spacing:0.04em;color:var(--black);}
+    .foot-nav{display:flex;gap:32px;}
+    .foot-nav a{font-size:13px;color:var(--gray-mid);text-decoration:none;transition:color 0.2s;}
+    .foot-nav a:hover{color:var(--black);}
+    .foot-right{font-size:13px;color:var(--gray-mid);}
+
+    /* ANIMATIONS */
+    .reveal{opacity:0;transform:translateY(40px);transition:opacity 1s ease,transform 1s cubic-bezier(0.16,1,0.3,1);}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .reveal-left{opacity:0;transform:translateX(-40px);transition:opacity 1s ease,transform 1s cubic-bezier(0.16,1,0.3,1);}
+    .reveal-left.visible{opacity:1;transform:translateX(0);}
+    .reveal-right{opacity:0;transform:translateX(40px);transition:opacity 1s ease,transform 1s cubic-bezier(0.16,1,0.3,1);}
+    .reveal-right.visible{opacity:1;transform:translateX(0);}
+    .stagger>*{opacity:0;transform:translateY(32px);transition:opacity 0.9s ease,transform 0.9s cubic-bezier(0.16,1,0.3,1);}
+    .stagger.visible>*:nth-child(1){opacity:1;transform:translateY(0);transition-delay:0s;}
+    .stagger.visible>*:nth-child(2){opacity:1;transform:translateY(0);transition-delay:0.18s;}
+    .stagger.visible>*:nth-child(3){opacity:1;transform:translateY(0);transition-delay:0.36s;}
+    .stagger.visible>*:nth-child(4){opacity:1;transform:translateY(0);transition-delay:0.54s;}
+
+    /* ── RESPONSIVE ── */
+
+    @media (max-width: 1024px) {
+      .nav{padding:0 32px;}
+      .hero-content{left:32px;right:32px;}
+      .section{padding:72px 32px;}
+      .cases-bg,.cap-section,.int-section,.proof-section,.work-section,.cta-section{padding:72px 32px;}
+      .trust-bar{padding:20px 32px;}
+      footer{padding:24px 32px;}
+      .cap-grid{grid-template-columns:repeat(2,1fr);}
+      .work-row{grid-template-columns:40px 1fr auto 28px;gap:20px;}
+      .work-desc{display:none;}
+    }
+
+    @media (max-width: 768px) {
+      .nav{padding:0 20px;height:60px;}
+      .nav-right .nav-link{display:none;}
+      .nav-right .nav-cta{display:none;}
+      .nav-hamburger{display:flex;}
+      .nav-menu{top:60px;}
+      .nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+      .nav-hamburger.open span:nth-child(2){opacity:0;}
+      .nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+      .nav-menu{margin-top:0;border-top:none;}
+      .hero{height:520px;cursor:auto;padding-top:60px;}
+      .hero-cursor{display:none;}
+      .hero-content{flex-direction:column;align-items:flex-start;gap:24px;bottom:40px;left:20px;right:20px;}
+      .hero-right{text-align:left;}
+      .hero-sub{text-align:left;max-width:100%;}
+      .hero-title{font-size:clamp(36px,9vw,56px);}
+      .trust-bar{padding:16px 20px;flex-direction:column;align-items:flex-start;gap:12px;}
+      .trust-items{gap:16px;}
+      .section{padding:56px 20px;}
+      .cases-bg,.cap-section,.int-section,.proof-section,.work-section{padding:56px 20px;}
+      .cta-section{padding:72px 20px;}
+      .intro-grid{grid-template-columns:1fr;gap:40px;}
+      .stat-row{flex-wrap:wrap;}
+      .stat-item{flex:0 0 calc(50% - 1px);border-right:none;border-bottom:1px solid var(--gray);padding:20px 0;}
+      .stat-item:not(:first-child){padding-left:0;}
+      .cases-header{flex-direction:column;align-items:flex-start;gap:12px;}
+      .cases-intro{text-align:left;max-width:100%;}
+      .cases-grid{grid-template-columns:1fr;}
+      .how-grid{grid-template-columns:1fr;}
+      .cap-header{flex-direction:column;align-items:flex-start;gap:12px;}
+      .cap-grid{grid-template-columns:1fr 1fr;gap:10px;}
+      .int-grid{grid-template-columns:1fr;gap:40px;}
+      .int-right{grid-template-columns:1fr;}
+      .proof-grid{grid-template-columns:1fr;gap:40px;}
+      .work-row{grid-template-columns:36px 1fr 28px;gap:16px;}
+      .work-desc,.work-yr{display:none;}
+      .work-name{font-size:17px;}
+      .cta-buttons{flex-direction:column;align-items:stretch;}
+      .cta-btn-primary,.cta-btn-secondary{text-align:center;}
+      footer{flex-direction:column;gap:20px;text-align:center;padding:24px 20px;}
+      .foot-nav{flex-wrap:wrap;justify-content:center;gap:16px;}
+    }
+
+    @media (max-width: 480px) {
+      .hero{height:480px;}
+      .hero-title{font-size:clamp(32px,10vw,48px);}
+      .cap-grid{grid-template-columns:1fr;}
+      .stat-item{flex:0 0 100%;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <canvas id="hc"></canvas>
+  <div class="hero-cursor" id="hcur"></div>
+  <nav class="nav">
+    <a class="nav-logo" href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <svg height="28" viewBox="400 50 1100 1000">
+        <path fill="white" d="M1326.1,434.57c-5.43-14.15-7.03-27.6-3.86-42.53,10.48-49.65-13.3-100.44-57.9-122.61-17.47-8.69-30.58-20.58-39.27-37.77-2.29-4.52-5.02-8.81-7.56-13.21-30.08-52.01-70.7-93.85-122.8-123.71-67.09-38.49-139.4-51.79-215.96-40.12-40.43,6.18-77.23,21.33-107.21,49.65-52.35,49.5-68.6,111.29-55.02,180.39,13.86,70.7,56.34,120.36,120.98,151.35,43,20.64,89.08,31.09,135.29,41.19,1.54.34,2.92.63,4.17.88.31.09.63.16.91.19l1.95.38,9.85,1.88,3.51-10.79.47-1.44,3.73-11.32c3.32-10.07,6.68-20.14,10-30.21,1.51,2.29,1.66,4.36,1.47,6.4-1.41,16.5-2.42,33.03-4.45,49.43-2.01,15.93-7.25,31.02-16.66,44.23-20.07,28.14-49.34,39.08-82.21,41.81-30.46,2.54-58.34-6.74-83.5-23.09-37.04-24.09-73.34-49.25-109.88-74.09-33.88-23.06-68.1-45.11-108.53-55.49-41.88-10.76-82.78-10.04-122.3,8.47-10.13,4.74-19.16,11.83-28.7,17.85.34.69,5.4.75,6.09.82,4.27.34,4.58.28,6.27.38,49.94,2.1,90.34,16.47,133.19,42.5,28.07,17.03,52.98,38.14,77.51,59.85,27.79,24.56,54.67,50.5,84.57,72.27,91.31,66.56,197.24,64.62,287.67-3.11,6.12-4.58,12.08-9.35,18.1-14.02.41.34.81.66,1.25.97-4.99,7.4-9.28,15.37-15.03,22.11-48.24,56.68-109.97,78.1-183.06,68.79-33.31-4.27-64.71-15.65-96.24-26.57-42.31-14.68-84.38-30.21-127.07-43.73-46.39-14.68-93.91-23.62-142.97-19.07-47.93,4.49-91.91,19.29-128.73,51.63-10.32,9.07-18.85,19.54-26.88,31.77,2.7-.5,5.08-1.07,6.56-1.38,16.62-3.57,32.56-5.74,48.96-10.13,39.84-10.7,79.92-13.74,120.76-7.12,31.05,5.05,60.32,15.65,88.68,28.48,44.85,20.33,89.15,41.81,133.69,62.77,48.24,22.71,97.77,40.68,151.63,44.57,66.4,4.83,128.73-8.13,186.79-40.94,57.03-32.24,98.46-79.74,132.28-134.72,1.1-1.79,2.23-3.51,4.01-6.31,0,2.45.16,3.54-.03,4.58-6.31,35.38-19.45,67.85-41.81,96.2-33.41,42.32-76.85,70.52-127.2,88.52-34.66,12.39-71.08,17.5-107.12,24.15-44.32,8.15-87.42,20.04-125.72,45.01-32.65,21.27-56.27,49.5-65.53,88.11-2.04,8.41-2.51,17.16-3.73,25.78l8.53-7.65c12.04-10.35,25.28-19.16,37.77-28.98,38.14-29.99,83.19-42.16,130.17-47.99,32.87-4.08,66.06-5.55,98.93-9.54,80.99-9.88,154.48-38.61,217.81-90.68,55.17-45.36,90.87-102.76,104.33-173.46,13.21-69.35,3.89-136.35-20.95-201.6ZM1213.77,398.71c-17.63-9.13-29.74-31.74-27.54-51.41,1.94-17.44,17.13-26.91,33.72-21.05,18.16,6.43,32.24,27.16,32.65,48.15.44,23.68-17.88,35.13-38.83,24.31Z"/>
+      </svg>
+      <div style="display:flex;flex-direction:column;justify-content:center;gap:2px;">
+        <span style="font-size:17px;font-weight:800;color:#fff;letter-spacing:0.05em;line-height:1;">ADAM</span>
+      </div>
+    </a>
+    <div class="nav-right">
+      <a class="nav-link" href="cases.html">Cases</a>
+      <a class="nav-link" href="about.html">Over ons</a>
+      <a class="nav-cta" href="contact.html">Plan een demo</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-left">
+      <div class="hero-label">Artificially Developed Autonomous Minds</div>
+      <h1 class="hero-title">
+        <span class="line"><span>Minder wachtrij.</span></span>
+        <span class="line"><span>Meer gesprek.</span></span>
+        <span class="line"><span>Altijd beschikbaar.</span></span>
+      </h1>
+    </div>
+    <div class="hero-right">
+      <p class="hero-sub">Autonome AI agents die telefoneren, chatten en processen afhandelen. Schaalbaar, betrouwbaar en zonder scripts.</p>
+      <a class="hero-cta" href="demo.html">Bekijk hoe het werkt →</a>
+    </div>
+  </div>
+</section>
+
+  <div class="nav-menu" id="navMenu">
+    <a href="cases.html">Cases</a>
+    <a href="about.html">Over ons</a>
+    <a href="contact.html">Plan een demo</a>
+  </div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <span class="trust-bar-label">Ingezet bij</span>
+  <div class="trust-items">
+    <span class="trust-item">Horeca & restaurants</span>
+    <span class="trust-item">Klantenservice teams</span>
+    <span class="trust-item">Sales & intake</span>
+    <span class="trust-item">Zorg & planning</span>
+    <span class="trust-item">Retail & reserveringen</span>
+  </div>
+</div>
+
+<!-- PROBLEEM / INTRO -->
+<section class="section">
+  <div class="inner">
+    <div class="intro-grid">
+      <div class="reveal-left">
+        <div class="section-label">Waarom ADAM</div>
+        <h2 class="intro-title">Uw systemen vragen aanpassing. <em>Uw klanten niet.</em></h2>
+        <div class="stat-row stagger">
+          <div class="stat-item">
+            <div class="stat-num" data-display="0">0</div>
+            <div class="stat-lbl">Keuzemenu's of scripts nodig</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">24/7</div>
+            <div class="stat-lbl">Beschikbaar, altijd dezelfde kwaliteit</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">∞</div>
+            <div class="stat-lbl">Gesprekken tegelijk, zonder wachttijd</div>
+          </div>
+        </div>
+      </div>
+      <div class="intro-body reveal-right">
+        <p>Bedrijven investeren jaarlijks miljoenen in klantenservice. En toch eindigt elke interactie hetzelfde: een menu, een wachtrij, een script dat niet past bij wat de klant wil zeggen.</p>
+        <p>ADAM lost dat op door de interface weg te nemen. Geen knoppen, geen formulieren, geen vastgesteld pad. Alleen een gesprek, waarbij de agent begrijpt wat er gevraagd wordt en direct handelt.</p>
+        <p>Voor uw organisatie betekent dit: minder druk op medewerkers, hogere klanttevredenheid en een communicatielaag die schaalt naarmate uw bedrijf groeit.</p>
+        <a class="intro-link" href="about.html">Over onze aanpak →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="cases-bg">
+  <div class="inner">
+    <div class="cases-header reveal">
+      <h2 class="cases-title">Vier situaties. Één platform.</h2>
+      <p class="cases-intro">ADAM past zich aan de context aan, niet andersom.</p>
+    </div>
+    <div class="cases-grid stagger">
+      <div class="case-card">
+        <div class="case-card-num">01</div>
+        <div class="case-card-title">Telefonische afhandeling</div>
+        <p class="case-card-body">Een klant belt. De agent herkent de intentie, beantwoordt vragen, plant afspraken of escaleert naar een medewerker. Geen wachtrij, geen keuzemenu.</p>
+        <span class="case-card-tag">Voice AI</span>
+      </div>
+      <div class="case-card">
+        <div class="case-card-num">02</div>
+        <div class="case-card-title">Digitale intake en support</div>
+        <p class="case-card-body">Op uw website of in uw app handelt de agent eerste vragen af, kwalificeert leads en zorgt dat de juiste informatie bij de juiste persoon terechtkomt.</p>
+        <span class="case-card-tag">Chat & web agent</span>
+      </div>
+      <div class="case-card">
+        <div class="case-card-num">03</div>
+        <div class="case-card-title">Reserveringen en bestellingen</div>
+        <p class="case-card-body">In de horeca, retail of dienstverlening neemt de agent bestellingen op, bevestigt reserveringen en verwerkt aanpassingen real-time in uw systeem.</p>
+        <span class="case-card-tag">Ordering & planning</span>
+      </div>
+      <div class="case-card">
+        <div class="case-card-num">04</div>
+        <div class="case-card-title">Interne automatisering</div>
+        <p class="case-card-body">Medewerkers stellen vragen aan een agent die toegang heeft tot uw CRM, agenda of kennisbank. Minder zoekwerk, snellere beslissingen.</p>
+        <span class="case-card-tag">AI copilot</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="inner">
+    <div class="how-header reveal">
+      <div class="section-label">Hoe het werkt</div>
+      <h2 class="how-title">Van eerste woord tot afgehandelde taak.</h2>
+    </div>
+    <div class="how-grid stagger">
+      <div class="how-tile">
+        <div class="how-num">01</div>
+        <div class="how-tile-title">Iemand start een gesprek</div>
+        <p class="how-tile-body">Via telefoon, chat of kiosk. De agent is direct beschikbaar, zonder instructies of tussenkomst. Het gesprek begint bij het eerste woord.</p>
+      </div>
+      <div class="how-tile">
+        <div class="how-num">02</div>
+        <div class="how-tile-title">De agent begrijpt de context</div>
+        <p class="how-tile-body">Intentie, toon, eerdere uitingen. De agent interpreteert wat er werkelijk gevraagd wordt en koppelt dit aan uw systemen en processen.</p>
+      </div>
+      <div class="how-tile">
+        <div class="how-num">03</div>
+        <div class="how-tile-title">Actie, bevestiging of overdracht</div>
+        <p class="how-tile-body">De agent handelt af, bevestigt, of draagt over aan een collega met volledige context. Geen herhaling, geen verlies van informatie.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="cap-section">
+  <div class="inner">
+    <div class="cap-header reveal">
+      <h2 class="cap-title">Wat ADAM agents kunnen.</h2>
+      <p class="cap-sub">Gebouwd voor schaal, ontworpen voor de gebruiker.</p>
+    </div>
+    <div class="cap-grid stagger">
+      <div class="cap-card">
+        <div class="cap-tag">Spraak</div>
+        <div class="cap-name">Real-time voice AI</div>
+        <p class="cap-desc">Verwerkt gesproken taal direct. Begrijpt context, onderbreking en toon. Voelt als een gesprek met een medewerker die écht luistert.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-tag">Geheugen</div>
+        <div class="cap-name">Contextueel geheugen</div>
+        <p class="cap-desc">Onthoudt wat eerder gezegd is binnen het gesprek. Geen herhaling nodig. De agent bouwt voort op elke uitwisseling.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-tag">Integratie</div>
+        <div class="cap-name">Verbonden met uw stack</div>
+        <p class="cap-desc">Koppelt met CRM, agenda, database of bestelplatform. Agents handelen af in uw systemen, niet naast ze.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-tag">Schaal</div>
+        <div class="cap-name">Onbeperkt gelijktijdig</div>
+        <p class="cap-desc">Honderd gesprekken tegelijk, dezelfde kwaliteit. Pieken in volume kosten geen extra capaciteit of wachttijd.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="int-section">
+  <div class="inner">
+    <div class="int-grid">
+      <div class="reveal-left">
+        <div class="section-label">Integraties</div>
+        <h2 class="int-title">Werkt met wat u al heeft.</h2>
+        <p class="int-body">ADAM agents koppelen met uw bestaande systemen. Geen migratie, geen herstructurering. De agent sluit aan op uw workflow en versterkt wat er al staat.</p>
+        <div class="int-tags">
+          <span class="int-tag">CRM systemen</span>
+          <span class="int-tag">Agenda & planning</span>
+          <span class="int-tag">Telefonie</span>
+          <span class="int-tag">Bestelplatforms</span>
+          <span class="int-tag">Kennisbanken</span>
+          <span class="int-tag">Databases</span>
+          <span class="int-tag">API koppelingen</span>
+        </div>
+      </div>
+      <div class="int-right reveal-right">
+        <div class="int-card">
+          <div class="int-card-title">Binnen dagen live</div>
+          <p class="int-card-body">Van briefing tot werkende agent. Geen maandenlange implementatietrajecten.</p>
+        </div>
+        <div class="int-card">
+          <div class="int-card-title">Op maat geconfigureerd</div>
+          <p class="int-card-body">Elke agent krijgt de toon, het domein en de mogelijkheden die passen bij uw context.</p>
+        </div>
+        <div class="int-card">
+          <div class="int-card-title">GDPR-compliant</div>
+          <p class="int-card-body">Data blijft binnen uw omgeving. Geen training op klantgesprekken zonder toestemming.</p>
+        </div>
+        <div class="int-card">
+          <div class="int-card-title">Overdracht naar mens</div>
+          <p class="int-card-body">De agent herkent wanneer een collega beter past en draagt over met volledige context.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section class="proof-section">
+  <div class="inner">
+    <div class="proof-grid">
+      <div class="reveal-left">
+        <div class="section-label-white">Gebouwd voor beslissers</div>
+        <h2 class="proof-title">Schaalbare communicatie zonder extra personeel.</h2>
+        <p class="proof-body">Groeiende organisaties lopen vast op het schaalpunt: meer klanten vragen meer capaciteit. ADAM doorbreekt die relatie. Meer gesprekken, zonder evenredige groei in kosten of bezetting.</p>
+        <a class="proof-cta" href="contact.html">Plan een kennismaking →</a>
+      </div>
+      <div class="proof-cards reveal-right">
+        <div class="proof-card">
+          <div class="proof-card-title">Minder druk op uw team</div>
+          <p class="proof-card-body">Standaardvragen, herhaalde verzoeken en eenvoudige afhandelingen gaan naar de agent. Uw medewerkers focussen op wat menselijk contact vraagt.</p>
+          <div class="proof-card-meta">Operationele impact</div>
+        </div>
+        <div class="proof-card">
+          <div class="proof-card-title">Hogere klanttevredenheid</div>
+          <p class="proof-card-body">Direct geholpen, zonder wachttijd en zonder keuzemenu. Klanten ervaren het als snel, duidelijk en prettig. Niet als een systeem.</p>
+          <div class="proof-card-meta">Klantbeleving</div>
+        </div>
+        <div class="proof-card">
+          <div class="proof-card-title">Schaalbaar van dag één</div>
+          <p class="proof-card-body">Of u nu 50 of 5.000 gesprekken per dag verwerkt. De infrastructuur past mee zonder herconfiguratie of extra kosten.</p>
+          <div class="proof-card-meta">Technische schaalbaarheid</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section class="work-section">
+  <div class="inner">
+    <div class="work-header reveal">
+      <h2 class="work-title">Geselecteerd werk</h2>
+      <a class="work-all" href="cases.html">Alle projecten →</a>
+    </div>
+    <div class="work-list stagger">
+      <a class="work-row" href="case-dijk-van-een-wijf.html" style="text-decoration:none;color:inherit;">
+        <span class="work-idx">01</span>
+        <span class="work-name">Dijk van een Wijf</span>
+        <span class="work-desc">Autonome telefonische afhandeling voor een landelijk opererende dienstverlener</span>
+        <span class="work-yr">2025</span>
+        <span class="work-arr">→</span>
+      </a>
+      <div class="work-row">
+        <span class="work-idx">02</span>
+        <span class="work-name">Neural Drift</span>
+        <span class="work-desc">Voice agent interface voor real-time klantbegeleiding in de zorg</span>
+        <span class="work-yr">2024</span>
+        <span class="work-arr">→</span>
+      </div>
+      <div class="work-row">
+        <span class="work-idx">03</span>
+        <span class="work-name">Forma</span>
+        <span class="work-desc">Gespreksgedreven bestelflow voor horecaformule op schaal</span>
+        <span class="work-yr">2024</span>
+        <span class="work-arr">→</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <canvas class="cta-bg-canvas" id="ctaC"></canvas>
+  <div class="cta-inner reveal">
+    <div class="cta-lbl">Klaar voor de volgende stap</div>
+    <h2 class="cta-title">Laten we het gesprek starten.</h2>
+    <p class="cta-sub">Vertel ons welk vraagstuk u wil oplossen. Wij laten zien hoe een ADAM agent dat voor uw organisatie aanpakt.</p>
+    <div class="cta-buttons">
+      <a class="cta-btn-primary" href="contact.html">Plan een demo</a>
+      <a class="cta-btn-secondary" href="about.html">Meer over ADAM</a>
+    </div>
+    <p class="cta-micro">Geen verplichtingen. Reactie binnen één werkdag.</p>
+  </div>
+</section>
+
+<footer>
+  <a class="foot-logo" href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+    <svg height="28" viewBox="400 50 1100 1000">
+      <path fill="#1D2ED8" d="M1326.1,434.57c-5.43-14.15-7.03-27.6-3.86-42.53,10.48-49.65-13.3-100.44-57.9-122.61-17.47-8.69-30.58-20.58-39.27-37.77-2.29-4.52-5.02-8.81-7.56-13.21-30.08-52.01-70.7-93.85-122.8-123.71-67.09-38.49-139.4-51.79-215.96-40.12-40.43,6.18-77.23,21.33-107.21,49.65-52.35,49.5-68.6,111.29-55.02,180.39,13.86,70.7,56.34,120.36,120.98,151.35,43,20.64,89.08,31.09,135.29,41.19,1.54.34,2.92.63,4.17.88.31.09.63.16.91.19l1.95.38,9.85,1.88,3.51-10.79.47-1.44,3.73-11.32c3.32-10.07,6.68-20.14,10-30.21,1.51,2.29,1.66,4.36,1.47,6.4-1.41,16.5-2.42,33.03-4.45,49.43-2.01,15.93-7.25,31.02-16.66,44.23-20.07,28.14-49.34,39.08-82.21,41.81-30.46,2.54-58.34-6.74-83.5-23.09-37.04-24.09-73.34-49.25-109.88-74.09-33.88-23.06-68.1-45.11-108.53-55.49-41.88-10.76-82.78-10.04-122.3,8.47-10.13,4.74-19.16,11.83-28.7,17.85.34.69,5.4.75,6.09.82,4.27.34,4.58.28,6.27.38,49.94,2.1,90.34,16.47,133.19,42.5,28.07,17.03,52.98,38.14,77.51,59.85,27.79,24.56,54.67,50.5,84.57,72.27,91.31,66.56,197.24,64.62,287.67-3.11,6.12-4.58,12.08-9.35,18.1-14.02.41.34.81.66,1.25.97-4.99,7.4-9.28,15.37-15.03,22.11-48.24,56.68-109.97,78.1-183.06,68.79-33.31-4.27-64.71-15.65-96.24-26.57-42.31-14.68-84.38-30.21-127.07-43.73-46.39-14.68-93.91-23.62-142.97-19.07-47.93,4.49-91.91,19.29-128.73,51.63-10.32,9.07-18.85,19.54-26.88,31.77,2.7-.5,5.08-1.07,6.56-1.38,16.62-3.57,32.56-5.74,48.96-10.13,39.84-10.7,79.92-13.74,120.76-7.12,31.05,5.05,60.32,15.65,88.68,28.48,44.85,20.33,89.15,41.81,133.69,62.77,48.24,22.71,97.77,40.68,151.63,44.57,66.4,4.83,128.73-8.13,186.79-40.94,57.03-32.24,98.46-79.74,132.28-134.72,1.1-1.79,2.23-3.51,4.01-6.31,0,2.45.16,3.54-.03,4.58-6.31,35.38-19.45,67.85-41.81,96.2-33.41,42.32-76.85,70.52-127.2,88.52-34.66,12.39-71.08,17.5-107.12,24.15-44.32,8.15-87.42,20.04-125.72,45.01-32.65,21.27-56.27,49.5-65.53,88.11-2.04,8.41-2.51,17.16-3.73,25.78l8.53-7.65c12.04-10.35,25.28-19.16,37.77-28.98,38.14-29.99,83.19-42.16,130.17-47.99,32.87-4.08,66.06-5.55,98.93-9.54,80.99-9.88,154.48-38.61,217.81-90.68,55.17-45.36,90.87-102.76,104.33-173.46,13.21-69.35,3.89-136.35-20.95-201.6ZM1213.77,398.71c-17.63-9.13-29.74-31.74-27.54-51.41,1.94-17.44,17.13-26.91,33.72-21.05,18.16,6.43,32.24,27.16,32.65,48.15.44,23.68-17.88,35.13-38.83,24.31Z"/>
+    </svg>
+    <span class="foot-logo-text">ADAM</span>
+  </a>
+  <nav class="foot-nav">
+    <a href="cases.html">Cases</a>
+    <a href="about.html">Over ons</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <span class="foot-right">© 2026 ADAM — Groningen, NL</span>
+</footer>
+
+<script>
+  (function(){
+    const canvas=document.getElementById('hc'),ctx=canvas.getContext('2d'),hero=document.getElementById('hero'),cur=document.getElementById('hcur');
+    let W=0,H=0,t=0,frame=0,mouse={x:.6,y:.45},sm={x:.6,y:.45};
+    const lerp=(a,b,f)=>a+(b-a)*f,YR=206,YG=255,YB=26;
+    let off=document.createElement('canvas'),bl=document.createElement('canvas');
+    let oc=off.getContext('2d'),bc=bl.getContext('2d');
+    function resize(){W=hero.offsetWidth;H=hero.offsetHeight;canvas.width=W;canvas.height=H;off.width=W+2*Math.round(W*.3);off.height=H;bl.width=off.width;bl.height=H;}
+    function grain(){const id=ctx.getImageData(0,0,W,H),d=id.data;for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*18;d[i]=Math.max(0,Math.min(255,d[i]+n));d[i+1]=Math.max(0,Math.min(255,d[i+1]+n));d[i+2]=Math.max(0,Math.min(255,d[i+2]+n));}ctx.putImageData(id,0,0);}
+    function draw(){
+      if(W===0||H===0){requestAnimationFrame(draw);return;}
+      frame++;t+=.005;sm.x=lerp(sm.x,mouse.x,.035);sm.y=lerp(sm.y,mouse.y,.035);
+      ctx.fillStyle='#1D2ED8';ctx.fillRect(0,0,W,H);
+      const PAD=.3,N=60,pts=[],OX=Math.round(W*PAD);
+      for(let i=0;i<N;i++){const p=i/(N-1),bx=(-PAD+p*(1+PAD*2))*W,by=H*(.72-p*.45),wave=Math.sin(p*Math.PI*2.8+t)*H*.10+Math.sin(p*Math.PI*1.4-t*.7)*H*.06+Math.sin(p*Math.PI*4.1+t*1.3)*H*.03,pull=Math.exp(-Math.pow(p-sm.x,2)/.05);pts.push({x:bx+(sm.x-p)*pull*W*.20,y:by+wave+(sm.y-.5)*pull*H*.55});}
+      oc.clearRect(0,0,off.width,H);
+      for(let i=0;i<N;i++){const p=i/(N-1),pt=pts[i],env=.25+.75*Math.sin(p*Math.PI),rx=W*(.12+.07*env),ry=H*(.18+.10*env),ox=pt.x+OX;oc.save();oc.scale(1,ry/rx);const g=oc.createRadialGradient(ox,pt.y*rx/ry,0,ox,pt.y*rx/ry,rx);g.addColorStop(0,`rgba(${YR},${YG},${YB},1)`);g.addColorStop(.2,`rgba(${YR},${YG},${YB},.92)`);g.addColorStop(.5,`rgba(${YR},${YG},${YB},.4)`);g.addColorStop(.75,`rgba(${YR},${YG},${YB},.08)`);g.addColorStop(1,`rgba(${YR},${YG},${YB},0)`);oc.beginPath();oc.arc(ox,pt.y*rx/ry,rx,0,Math.PI*2);oc.fillStyle=g;oc.fill();oc.restore();}
+      bc.filter=`blur(${Math.round(W*.026)}px)`;bc.clearRect(0,0,bl.width,H);bc.drawImage(off,0,0);ctx.drawImage(bl,-OX,0);
+      if(frame%2===0)grain();requestAnimationFrame(draw);
+    }
+    hero.addEventListener('mousemove',e=>{const r=hero.getBoundingClientRect();mouse.x=(e.clientX-r.left)/W;mouse.y=(e.clientY-r.top)/H;cur.style.left=(e.clientX-r.left)+'px';cur.style.top=(e.clientY-r.top)+'px';cur.style.opacity='1';});
+    hero.addEventListener('mouseleave',()=>{cur.style.opacity='0';});
+    window.addEventListener('resize',resize);resize();draw();
+  })();
+
+  (function(){
+    const canvas=document.getElementById('ctaC'),ctx=canvas.getContext('2d'),sec=canvas.parentElement;
+    let W=0,H=0,t=0;const YR=206,YG=255,YB=26;
+    function resize(){W=sec.offsetWidth;H=sec.offsetHeight;canvas.width=W;canvas.height=H;}
+    function draw(){if(W===0||H===0){requestAnimationFrame(draw);return;}t+=.003;ctx.fillStyle='#0A0A0A';ctx.fillRect(0,0,W,H);for(let i=0;i<4;i++){const cx=W*(.2+.6*(i/3))+Math.sin(t+i*1.3)*W*.08,cy=H*.5+Math.cos(t*.7+i*1.1)*H*.2,r=W*.2,g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,`rgba(${YR},${YG},${YB},.07)`);g.addColorStop(.5,`rgba(${YR},${YG},${YB},.02)`);g.addColorStop(1,`rgba(${YR},${YG},${YB},0)`);ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();}requestAnimationFrame(draw);}
+    window.addEventListener('resize',resize);resize();draw();
+  })();
+
+  (function(){
+    const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});},{threshold:0.3});
+    document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.stagger').forEach(el=>observer.observe(el));
+  })();
+
+  (function(){
+    const el=document.querySelector('.stat-num[data-display="0"]');
+    if(!el)return;
+    const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){let c=47;const iv=setInterval(()=>{c-=1;if(c<=0){c=0;clearInterval(iv);}el.textContent=c;},55);observer.unobserve(e.target);}});},{threshold:0.5});
+    observer.observe(el);
+  })();
+
+document.getElementById('hamburger').addEventListener('click',()=>{
+  const menu = document.getElementById('navMenu');
+  const burger = document.getElementById('hamburger');
+  const nav = document.querySelector('.nav');
+  menu.classList.toggle('open');
+  burger.classList.toggle('open');
+  nav.classList.toggle('nav-dark');
+});
+</script>
+</body>
+</html>
