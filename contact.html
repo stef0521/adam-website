@@ -292,12 +292,32 @@
     window.addEventListener('resize',resize);resize();draw();
   })();
 
-  function submitForm(){
-    const email=document.getElementById('email').value;
-    if(!email){alert('Vul uw e-mailadres in.');return;}
+async function submitForm(){
+  const email = document.getElementById('email').value;
+  if(!email){alert('Vul uw e-mailadres in.');return;}
+
+  const data = {
+    voornaam: document.getElementById('fname').value,
+    achternaam: document.getElementById('lname').value,
+    email: email,
+    bedrijf: document.getElementById('company').value,
+    toepassing: document.getElementById('usecase').value,
+    bericht: document.getElementById('message').value
+  };
+
+  const res = await fetch('https://formspree.io/f/xpqkwzgk', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+
+  if(res.ok){
     document.getElementById('contactForm').style.display='none';
     document.getElementById('formSuccess').classList.add('visible');
+  } else {
+    alert('Er ging iets mis. Probeer het opnieuw.');
   }
+}
 
   (function(){
     const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});},{threshold:0.3});
