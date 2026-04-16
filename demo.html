@@ -6,7 +6,11 @@
   <title>Praat met ADAM — AI Agent Demo</title>
   <meta name="description" content="Ervaar zelf hoe een ADAM agent werkt. Geen menu's, geen scripts. Stel een vraag en het gesprek begint."/>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/@11labs/client@0.0.5/dist/index.umd.js"></script>  <style>
+  <script type="module">
+    import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client@0.0.5/+esm';
+    window.ElevenLabsConversation = Conversation;
+  </script>
+  <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     :root{--blue:#1D2ED8;--yellow:#CEFF1A;--black:#0A0A0A;--white:#FFFFFF;--gray:#E5E7EB;--gray-mid:#9CA3AF;}
     html,body{height:100%;font-family:'Sora',sans-serif;overflow:hidden;}
@@ -301,8 +305,7 @@ async function startConversation() {
     document.getElementById('statusText').textContent = 'Verbinden...';
     document.getElementById('badgeText').textContent = 'Verbinden...';
 
-    const Client = window.ElevenLabsClient || window.ElevenLabs || window.elevenlabs;
-    conversation = await Client.Conversation.startSession({
+    conversation = await window.ElevenLabsConversation.startSession({
       agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f', 
 
       onConnect: () => {
