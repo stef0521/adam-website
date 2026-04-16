@@ -12,69 +12,388 @@
   </script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    :root{--blue:#1D2ED8;--yellow:#CEFF1A;--black:#0A0A0A;--white:#FFFFFF;--gray:#E5E7EB;--gray-mid:#9CA3AF;}
-    html,body{height:100%;font-family:'Sora',sans-serif;overflow:hidden;}
-    body{background:var(--black);color:var(--white);}
 
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;position:fixed;top:0;left:0;right:0;z-index:30;border-bottom:1px solid rgba(255,255,255,0.07);}
-    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-    .nav-logo-text{font-size:16px;font-weight:800;color:#fff;letter-spacing:0.05em;}
-    .nav-back{font-size:13px;font-weight:600;color:rgba(255,255,255,0.4);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s;}
-    .nav-back:hover{color:#fff;}
-    .nav-status{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
-    .nav-status-dot{width:7px;height:7px;border-radius:50%;background:#444;}
-    .nav-status-dot.ready{background:#CEFF1A;box-shadow:0 0 8px rgba(206,255,26,0.5);}
-    .nav-status-dot.active{background:#CEFF1A;animation:pulse-dot 1.2s ease-in-out infinite;}
-    @keyframes pulse-dot{0%,100%{box-shadow:0 0 6px rgba(206,255,26,0.4);}50%{box-shadow:0 0 14px rgba(206,255,26,0.8);}}
+    :root{
+      --blue:#1D2ED8;
+      --yellow:#CEFF1A;
+      --black:#0A0A0A;
+      --white:#FFFFFF;
+    }
 
-    .layout{display:grid;grid-template-columns:420px 1fr;height:100vh;padding-top:64px;}
+    html,body{
+      height:100%;
+      font-family:'Sora',sans-serif;
+      overflow:hidden;
+    }
 
-    .left-panel{background:#0d0d0d;border-right:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;overflow:hidden;}
-    .left-header{padding:36px 40px 28px;border-bottom:1px solid rgba(255,255,255,0.07);}
-    .left-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px;}
-    .left-title{font-size:22px;font-weight:800;line-height:1.15;letter-spacing:-0.02em;}
-    .left-subtitle{font-size:13px;color:rgba(255,255,255,0.4);margin-top:8px;line-height:1.6;}
-    .left-body{padding:28px 40px;flex:1;overflow-y:auto;}
-    .left-body::-webkit-scrollbar{width:0;}
-    .info-block{margin-bottom:32px;}
-    .info-block-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;}
-    .suggestion-list{display:flex;flex-direction:column;gap:8px;}
-    .suggestion{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:12px 16px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.5;cursor:pointer;transition:background 0.2s,border-color 0.2s,color 0.2s;}
-    .suggestion:hover{background:rgba(255,255,255,0.09);border-color:rgba(206,255,26,0.2);color:#fff;}
-    .suggestion::before{content:'"';color:rgba(206,255,26,0.4);margin-right:2px;}
-    .suggestion::after{content:'"';color:rgba(206,255,26,0.4);margin-left:2px;}
-    .capability-list{display:flex;flex-direction:column;gap:10px;}
-    .capability{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;}
-    .cap-dot{width:5px;height:5px;border-radius:50%;background:var(--yellow);flex-shrink:0;margin-top:6px;}
-    .left-footer{padding:24px 40px;border-top:1px solid rgba(255,255,255,0.07);}
-    .api-notice{font-size:11px;color:rgba(255,255,255,0.2);line-height:1.6;}
-    .api-notice span{color:rgba(206,255,26,0.5);font-weight:600;}
+    body{
+      background:var(--black);
+      color:var(--white);
+    }
 
-    .right-panel{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
-    .right-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 48px;
+      height:64px;
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      z-index:30;
+      border-bottom:1px solid rgba(255,255,255,0.07);
+      backdrop-filter:blur(10px);
+    }
 
-    .orb-container{position:relative;display:flex;flex-direction:column;align-items:center;gap:40px;z-index:2;}
-    .orb-wrap{position:relative;width:180px;height:180px;cursor:pointer;}
-    .orb-rings{position:absolute;inset:-40px;pointer-events:none;}
-    .orb-ring{position:absolute;border-radius:50%;border:1px solid rgba(206,255,26,0.12);opacity:0;animation:ring-expand 3s ease-out infinite;}
+    .nav-logo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+    }
+
+    .nav-logo-text{
+      font-size:16px;
+      font-weight:800;
+      color:#fff;
+      letter-spacing:0.05em;
+    }
+
+    .nav-back{
+      font-size:13px;
+      font-weight:600;
+      color:rgba(255,255,255,0.4);
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      transition:color 0.2s;
+    }
+
+    .nav-back:hover{
+      color:#fff;
+    }
+
+    .nav-status{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,0.3);
+    }
+
+    .nav-status-dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#444;
+    }
+
+    .nav-status-dot.ready{
+      background:#CEFF1A;
+      box-shadow:0 0 8px rgba(206,255,26,0.5);
+    }
+
+    .nav-status-dot.active{
+      background:#CEFF1A;
+      animation:pulse-dot 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot{
+      0%,100%{box-shadow:0 0 6px rgba(206,255,26,0.4);}
+      50%{box-shadow:0 0 14px rgba(206,255,26,0.8);}
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:420px 1fr;
+      height:100vh;
+      padding-top:64px;
+    }
+
+    .left-panel{
+      background:#0d0d0d;
+      border-right:1px solid rgba(255,255,255,0.07);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .left-header{
+      padding:36px 40px 28px;
+      border-bottom:1px solid rgba(255,255,255,0.07);
+    }
+
+    .left-eyebrow{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--yellow);
+      margin-bottom:12px;
+    }
+
+    .left-title{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.15;
+      letter-spacing:-0.02em;
+    }
+
+    .left-subtitle{
+      font-size:13px;
+      color:rgba(255,255,255,0.4);
+      margin-top:8px;
+      line-height:1.6;
+    }
+
+    .left-body{
+      padding:28px 40px;
+      flex:1;
+      overflow-y:auto;
+    }
+
+    .left-body::-webkit-scrollbar{
+      width:0;
+    }
+
+    .info-block{
+      margin-bottom:32px;
+    }
+
+    .info-block-label{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,0.3);
+      margin-bottom:14px;
+    }
+
+    .suggestion-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .suggestion{
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:4px;
+      padding:12px 16px;
+      font-size:13px;
+      color:rgba(255,255,255,0.65);
+      line-height:1.5;
+      cursor:pointer;
+      transition:background 0.2s,border-color 0.2s,color 0.2s;
+    }
+
+    .suggestion:hover{
+      background:rgba(255,255,255,0.09);
+      border-color:rgba(206,255,26,0.2);
+      color:#fff;
+    }
+
+    .suggestion::before{
+      content:'"';
+      color:rgba(206,255,26,0.4);
+      margin-right:2px;
+    }
+
+    .suggestion::after{
+      content:'"';
+      color:rgba(206,255,26,0.4);
+      margin-left:2px;
+    }
+
+    .capability-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .capability{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      font-size:13px;
+      color:rgba(255,255,255,0.5);
+      line-height:1.5;
+    }
+
+    .cap-dot{
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      background:var(--yellow);
+      flex-shrink:0;
+      margin-top:6px;
+    }
+
+    .left-footer{
+      padding:24px 40px;
+      border-top:1px solid rgba(255,255,255,0.07);
+    }
+
+    .api-notice{
+      font-size:11px;
+      color:rgba(255,255,255,0.2);
+      line-height:1.6;
+    }
+
+    .api-notice span{
+      color:rgba(206,255,26,0.5);
+      font-weight:600;
+    }
+
+    .right-panel{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      padding:40px;
+    }
+
+    .right-canvas{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+    }
+
+    .orb-container{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:34px;
+      z-index:2;
+      margin-top:-40px;
+    }
+
+    .orb-wrap{
+      position:relative;
+      width:180px;
+      height:180px;
+      cursor:pointer;
+    }
+
+    .orb-rings{
+      position:absolute;
+      inset:-40px;
+      pointer-events:none;
+    }
+
+    .orb-ring{
+      position:absolute;
+      border-radius:50%;
+      border:1px solid rgba(206,255,26,0.12);
+      opacity:0;
+      animation:ring-expand 3s ease-out infinite;
+    }
+
     .orb-ring:nth-child(1){inset:40px;animation-delay:0s;}
     .orb-ring:nth-child(2){inset:20px;animation-delay:0.8s;}
     .orb-ring:nth-child(3){inset:0;animation-delay:1.6s;}
-    @keyframes ring-expand{0%{opacity:0;transform:scale(0.8);}30%{opacity:1;}100%{opacity:0;transform:scale(1.3);}}
-    .orb{width:180px;height:180px;border-radius:50%;background:var(--blue);position:relative;overflow:hidden;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
-    .orb:hover{transform:scale(1.04);}
-    .orb.speaking{animation:orb-pulse 0.8s ease-in-out infinite alternate;}
-    @keyframes orb-pulse{from{transform:scale(1.04);}to{transform:scale(1.09);}}
-    .orb-canvas{width:100%;height:100%;display:block;}
-    .orb-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-    .orb-mic{width:32px;height:32px;}
-    .orb-mic svg{width:100%;height:100%;}
-    .orb-label{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.35);text-align:center;transition:color 0.3s;}
-    .orb-label.active-label{color:var(--yellow);}
 
-    .waveform-wrap{display:flex;align-items:center;gap:3px;height:36px;opacity:0;transition:opacity 0.4s;}
-    .waveform-wrap.visible{opacity:1;}
-    .wave-bar{width:3px;border-radius:2px;background:var(--yellow);transform-origin:center;animation:wave-idle 1.8s ease-in-out infinite;}
+    @keyframes ring-expand{
+      0%{opacity:0;transform:scale(0.8);}
+      30%{opacity:1;}
+      100%{opacity:0;transform:scale(1.3);}
+    }
+
+    .orb{
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:var(--blue);
+      position:relative;
+      overflow:hidden;
+      transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .orb:hover{
+      transform:scale(1.04);
+    }
+
+    .orb.speaking{
+      animation:orb-pulse 0.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes orb-pulse{
+      from{transform:scale(1.04);}
+      to{transform:scale(1.09);}
+    }
+
+    .orb-canvas{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .orb-icon{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+
+    .orb-mic{
+      width:32px;
+      height:32px;
+    }
+
+    .orb-mic svg{
+      width:100%;
+      height:100%;
+    }
+
+    .orb-label{
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,0.35);
+      text-align:center;
+      transition:color 0.3s;
+      min-height:18px;
+    }
+
+    .orb-label.active-label{
+      color:var(--yellow);
+    }
+
+    .waveform-wrap{
+      display:flex;
+      align-items:center;
+      gap:3px;
+      height:36px;
+      opacity:0;
+      transition:opacity 0.4s;
+    }
+
+    .waveform-wrap.visible{
+      opacity:1;
+    }
+
+    .wave-bar{
+      width:3px;
+      border-radius:2px;
+      background:var(--yellow);
+      transform-origin:center;
+      animation:wave-idle 1.8s ease-in-out infinite;
+    }
+
     .wave-bar:nth-child(1){height:8px;animation-delay:0s;}
     .wave-bar:nth-child(2){height:16px;animation-delay:0.15s;}
     .wave-bar:nth-child(3){height:24px;animation-delay:0.3s;}
@@ -87,91 +406,238 @@
     .wave-bar:nth-child(10){height:10px;animation-delay:0.4s;}
     .wave-bar:nth-child(11){height:18px;animation-delay:0.12s;}
     .wave-bar:nth-child(12){height:26px;animation-delay:0.32s;}
-    @keyframes wave-idle{0%,100%{transform:scaleY(1);opacity:0.5;}50%{transform:scaleY(1.8);opacity:1;}}
-    .wave-bar.speaking{animation:wave-speak 0.4s ease-in-out infinite alternate;}
-    @keyframes wave-speak{from{transform:scaleY(0.4);}to{transform:scaleY(1);}}
 
-    .transcript-area{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:540px;max-width:calc(100% - 80px);z-index:2;}
-    .transcript-bubble{background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:20px 24px;opacity:0;transform:translateY(12px);transition:opacity 0.4s,transform 0.4s;}
-    .transcript-bubble.visible{opacity:1;transform:translateY(0);}
-    .transcript-role{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;}
-    .transcript-role.agent-role{color:rgba(206,255,26,0.5);}
-    .transcript-text{font-size:15px;color:#fff;line-height:1.6;font-weight:400;}
-
-    .keyboard-hint{position:absolute;bottom:16px;right:24px;font-size:11px;color:rgba(255,255,255,0.2);display:flex;align-items:center;gap:6px;z-index:2;}
-    .kbd{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:3px;padding:2px 6px;font-size:10px;font-family:monospace;}
-
-    .orb-status{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:10;text-align:center;}
-    .orb-status-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(206,255,26,0.1);border:1px solid rgba(206,255,26,0.2);border-radius:3px;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--yellow);}
-    .orb-status-dot{width:6px;height:6px;border-radius:50%;background:var(--yellow);animation:pulse-dot 1.2s ease-in-out infinite;}
-
-    @media (max-width: 768px) {
-      html,body{overflow:auto;height:auto;}
-      .layout{grid-template-columns:1fr;height:auto;padding-top:64px;}
-      .left-panel{height:auto;overflow:visible;}
-      .left-body{overflow:visible;}
-      .right-panel{height:90vw;min-height:420px;}
-      .transcript-area{width:calc(100% - 40px);}
-      .orb-status{bottom:60px;}
-      .nav{padding:0 20px;}
-      .nav-status span{display:none;}
-      .keyboard-hint{display:none;}
+    @keyframes wave-idle{
+      0%,100%{transform:scaleY(1);opacity:0.5;}
+      50%{transform:scaleY(1.8);opacity:1;}
     }
 
-    @media (max-width: 480px) {
-      .left-header{padding:24px 20px 20px;}
-      .left-body{padding:20px;}
-      .left-footer{padding:16px 20px;}
-      .orb-wrap{width:140px;height:140px;}
-      .orb{width:140px;height:140px;}
+    .wave-bar.speaking{
+      animation:wave-speak 0.4s ease-in-out infinite alternate;
     }
 
-    .text-input-wrap{
+    @keyframes wave-speak{
+      from{transform:scaleY(0.4);}
+      to{transform:scaleY(1);}
+    }
+
+    .orb-status{
       position:absolute;
-      bottom:140px;
       left:50%;
+      bottom:220px;
       transform:translateX(-50%);
-      width:540px;
-      max-width:calc(100% - 80px);
-      display:flex;
-      gap:10px;
+      z-index:4;
+      text-align:center;
+      width:min(540px, calc(100% - 80px));
+      pointer-events:none;
+    }
+
+    .orb-status-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(206,255,26,0.1);
+      border:1px solid rgba(206,255,26,0.2);
+      border-radius:3px;
+      padding:8px 16px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      color:var(--yellow);
+      max-width:100%;
+      white-space:normal;
+      line-height:1.4;
+    }
+
+    .orb-status-dot{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:var(--yellow);
+      animation:pulse-dot 1.2s ease-in-out infinite;
+      flex-shrink:0;
+    }
+
+    .transcript-area{
+      position:absolute;
+      left:50%;
+      bottom:40px;
+      transform:translateX(-50%);
+      width:min(700px, calc(100% - 80px));
       z-index:3;
     }
 
-    .text-input{
-      flex:1;
+    .transcript-bubble{
+      background:rgba(255,255,255,0.06);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:12px;
+      padding:20px 24px;
+      opacity:0;
+      transform:translateY(12px);
+      transition:opacity 0.4s,transform 0.4s;
+      min-height:120px;
+      max-height:220px;
+      overflow-y:auto;
+    }
+
+    .transcript-bubble.visible{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .transcript-bubble::-webkit-scrollbar{
+      width:6px;
+    }
+
+    .transcript-bubble::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.14);
+      border-radius:999px;
+    }
+
+    .transcript-role{
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,0.3);
+      margin-bottom:10px;
+    }
+
+    .transcript-role.agent-role{
+      color:rgba(206,255,26,0.6);
+    }
+
+    .transcript-text{
+      font-size:18px;
+      color:#fff;
+      line-height:1.55;
+      font-weight:400;
+      word-break:break-word;
+    }
+
+    .keyboard-hint{
+      position:absolute;
+      bottom:16px;
+      right:24px;
+      font-size:11px;
+      color:rgba(255,255,255,0.2);
+      display:flex;
+      align-items:center;
+      gap:6px;
+      z-index:2;
+    }
+
+    .kbd{
       background:rgba(255,255,255,0.06);
       border:1px solid rgba(255,255,255,0.12);
-      color:#fff;
-      padding:14px 16px;
-      border-radius:8px;
-      font-family:'Sora',sans-serif;
-      font-size:14px;
-      outline:none;
+      border-radius:3px;
+      padding:2px 6px;
+      font-size:10px;
+      font-family:monospace;
     }
 
-    .text-input::placeholder{
-      color:rgba(255,255,255,0.35);
+    @media (max-width: 768px){
+      html,body{
+        overflow:auto;
+        height:auto;
+      }
+
+      .layout{
+        grid-template-columns:1fr;
+        height:auto;
+        padding-top:64px;
+      }
+
+      .left-panel{
+        height:auto;
+        overflow:visible;
+      }
+
+      .left-body{
+        overflow:visible;
+      }
+
+      .right-panel{
+        min-height:620px;
+        padding:30px 20px 140px;
+      }
+
+      .transcript-area{
+        width:calc(100% - 40px);
+        bottom:24px;
+      }
+
+      .transcript-bubble{
+        min-height:110px;
+        max-height:200px;
+        padding:18px 18px;
+      }
+
+      .transcript-text{
+        font-size:16px;
+      }
+
+      .orb-status{
+        width:calc(100% - 40px);
+        bottom:250px;
+      }
+
+      .nav{
+        padding:0 20px;
+      }
+
+      .nav-status span{
+        display:none;
+      }
+
+      .keyboard-hint{
+        display:none;
+      }
     }
 
-    .send-btn{
-      background:#CEFF1A;
-      color:#0A0A0A;
-      border:none;
-      border-radius:8px;
-      padding:0 18px;
-      font-family:'Sora',sans-serif;
-      font-weight:700;
-      cursor:pointer;
+    @media (max-width: 480px){
+      .left-header{
+        padding:24px 20px 20px;
+      }
+
+      .left-body{
+        padding:20px;
+      }
+
+      .left-footer{
+        padding:16px 20px;
+      }
+
+      .orb-wrap{
+        width:140px;
+        height:140px;
+      }
+
+      .orb{
+        width:140px;
+        height:140px;
+      }
+
+      .orb-container{
+        gap:24px;
+        margin-top:-10px;
+      }
+
+      .orb-status{
+        bottom:230px;
+      }
+
+      .transcript-text{
+        font-size:15px;
+      }
+
+      .orb-status-badge{
+        font-size:10px;
+        padding:8px 12px;
+      }
     }
-
-  @media (max-width: 768px){
-  .text-input-wrap{
-    width:calc(100% - 40px);
-    bottom:120px;
-  }
-}
-
   </style>
 </head>
 <body>
@@ -183,32 +649,35 @@
     </svg>
     <span class="nav-logo-text">ADAM</span>
   </a>
+
   <div class="nav-status">
     <div class="nav-status-dot" id="statusDot"></div>
     <span id="statusText">Klik op de orb om te starten</span>
   </div>
+
   <a class="nav-back" href="index.html">← Terug</a>
 </nav>
 
 <div class="layout">
-
   <div class="left-panel">
     <div class="left-header">
       <div class="left-eyebrow">ADAM Demo Agent</div>
       <div class="left-title">Stel een vraag.<br>Het gesprek begint.</div>
       <div class="left-subtitle">Geen menu's, geen scripts. Praat gewoon.</div>
     </div>
+
     <div class="left-body">
       <div class="info-block">
         <div class="info-block-label">Wat kun je vragen</div>
         <div class="suggestion-list">
-          <div class="suggestion" onclick="setExample(this)">Wat kan ADAM voor mijn bedrijf doen?</div>
-          <div class="suggestion" onclick="setExample(this)">Hoe werkt een voice agent in de praktijk?</div>
-          <div class="suggestion" onclick="setExample(this)">Hoe snel kan een agent live gaan?</div>
-          <div class="suggestion" onclick="setExample(this)">Wat kost het om een agent te bouwen?</div>
-          <div class="suggestion" onclick="setExample(this)">Kan de agent koppelen met mijn CRM?</div>
+          <div class="suggestion">Wat kan ADAM voor mijn bedrijf doen?</div>
+          <div class="suggestion">Hoe werkt een voice agent in de praktijk?</div>
+          <div class="suggestion">Hoe snel kan een agent live gaan?</div>
+          <div class="suggestion">Wat kost het om een agent te bouwen?</div>
+          <div class="suggestion">Kan de agent koppelen met mijn CRM?</div>
         </div>
       </div>
+
       <div class="info-block">
         <div class="info-block-label">Deze agent weet alles over</div>
         <div class="capability-list">
@@ -220,6 +689,7 @@
         </div>
       </div>
     </div>
+
     <div class="left-footer">
       <div class="api-notice">
         <span>Live voice agent</span> powered by ElevenLabs. Klik op de orb rechts om het gesprek te starten.
@@ -233,10 +703,11 @@
     <div class="orb-container">
       <div class="orb-wrap" id="orbWrap">
         <div class="orb-rings">
-          <div class="orb-ring" id="ring1"></div>
-          <div class="orb-ring" id="ring2"></div>
-          <div class="orb-ring" id="ring3"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
         </div>
+
         <div class="orb" id="orb">
           <canvas class="orb-canvas" id="orbCanvas"></canvas>
           <div class="orb-icon">
@@ -269,28 +740,19 @@
       <div class="orb-label" id="orbLabel">Klik om te starten</div>
     </div>
 
-    <div class="transcript-area">
-      <div class="transcript-bubble" id="transcriptBubble">
-        <div class="transcript-role agent-role" id="transcriptRole">ADAM</div>
-        <div class="transcript-text" id="transcriptText">Klik op de orb om het gesprek te starten. Je kunt alles vragen over ADAM en onze AI agents.</div>
-      </div>
-    </div>
-
-    <div class="text-input-wrap">
-        <input
-           type="text"
-          id="textInput"
-          class="text-input"
-          placeholder="Typ je vraag aan ADAM..."
-          autocomplete="off"
-        />
-          <button id="sendBtn" class="send-btn">Verstuur</button>
-    </div>
-
     <div class="orb-status">
       <div class="orb-status-badge" id="statusBadge">
         <div class="orb-status-dot"></div>
         <span id="badgeText">Klik op de orb om te starten</span>
+      </div>
+    </div>
+
+    <div class="transcript-area">
+      <div class="transcript-bubble visible" id="transcriptBubble">
+        <div class="transcript-role agent-role" id="transcriptRole">ADAM</div>
+        <div class="transcript-text" id="transcriptText">
+          Klik op de orb om het gesprek te starten. Je kunt alles vragen over ADAM en onze AI agents.
+        </div>
       </div>
     </div>
 
@@ -302,239 +764,227 @@
 </div>
 
 <script>
+  (function(){
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, t = 0;
+    const YR = 206, YG = 255, YB = 26;
 
-console.log(Object.keys(window).filter(k => k.toLowerCase().includes('eleven')));
+    function resize(){
+      W = canvas.parentElement.offsetWidth;
+      H = canvas.parentElement.offsetHeight;
+      canvas.width = W;
+      canvas.height = H;
+    }
 
-(function(){
-  const canvas=document.getElementById('bgCanvas'),ctx=canvas.getContext('2d');
-  let W=0,H=0,t=0;
-  const YR=206,YG=255,YB=26;
-  function resize(){W=canvas.parentElement.offsetWidth;H=canvas.parentElement.offsetHeight;canvas.width=W;canvas.height=H;}
-  function draw(){
-    t+=.004;ctx.fillStyle='#080810';ctx.fillRect(0,0,W,H);
-    const blobs=[{x:.2,y:.3,r:.45,s:.3},{x:.75,y:.6,r:.5,s:.2},{x:.5,y:.85,r:.35,s:.5}];
-    blobs.forEach((b,i)=>{
-      const cx=(b.x+Math.sin(t*b.s+i*1.2)*0.1)*W,cy=(b.y+Math.cos(t*b.s*0.8+i)*0.12)*H,r=b.r*Math.min(W,H);
-      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
-      g.addColorStop(0,`rgba(${YR},${YG},${YB},.04)`);g.addColorStop(.5,`rgba(${YR},${YG},${YB},.015)`);g.addColorStop(1,`rgba(${YR},${YG},${YB},0)`);
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
-    });
-    const cx=W*.5,cy=H*.5,r=W*.3;
-    const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
-    bg.addColorStop(0,'rgba(29,46,216,0.12)');bg.addColorStop(1,'rgba(29,46,216,0)');
-    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
-    requestAnimationFrame(draw);
+    function draw(){
+      t += 0.004;
+      ctx.fillStyle = '#080810';
+      ctx.fillRect(0,0,W,H);
+
+      const blobs = [
+        {x:.2,y:.3,r:.45,s:.3},
+        {x:.75,y:.6,r:.5,s:.2},
+        {x:.5,y:.85,r:.35,s:.5}
+      ];
+
+      blobs.forEach((b,i)=>{
+        const cx = (b.x + Math.sin(t*b.s+i*1.2)*0.1) * W;
+        const cy = (b.y + Math.cos(t*b.s*0.8+i)*0.12) * H;
+        const r = b.r * Math.min(W,H);
+        const g = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        g.addColorStop(0, `rgba(${YR},${YG},${YB},.04)`);
+        g.addColorStop(.5, `rgba(${YR},${YG},${YB},.015)`);
+        g.addColorStop(1, `rgba(${YR},${YG},${YB},0)`);
+        ctx.beginPath();
+        ctx.arc(cx,cy,r,0,Math.PI*2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+
+      const cx = W * .5;
+      const cy = H * .5;
+      const r = W * .3;
+      const bg = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      bg.addColorStop(0,'rgba(29,46,216,0.12)');
+      bg.addColorStop(1,'rgba(29,46,216,0)');
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  })();
+
+  (function(){
+    const canvas = document.getElementById('orbCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, t = 0;
+
+    function resize(){
+      W = canvas.offsetWidth;
+      H = canvas.offsetHeight;
+      canvas.width = W;
+      canvas.height = H;
+    }
+
+    function draw(){
+      t += 0.008;
+      ctx.clearRect(0,0,W,H);
+
+      const base = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,W*.5);
+      base.addColorStop(0,'#2a40f0');
+      base.addColorStop(1,'#1020c0');
+
+      ctx.beginPath();
+      ctx.arc(W*.5,H*.5,W*.5,0,Math.PI*2);
+      ctx.fillStyle = base;
+      ctx.fill();
+
+      const blobs = [
+        {x:.35,y:.4,r:.28,s:.7},
+        {x:.6,y:.55,r:.22,s:.5},
+        {x:.45,y:.65,r:.18,s:.9}
+      ];
+
+      blobs.forEach((b,i)=>{
+        const cx = (b.x + Math.sin(t*b.s+i)*0.15) * W;
+        const cy = (b.y + Math.cos(t*b.s+i)*0.12) * H;
+        const r = b.r * W;
+        const g = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        g.addColorStop(0,'rgba(206,255,26,0.55)');
+        g.addColorStop(.4,'rgba(206,255,26,0.18)');
+        g.addColorStop(1,'rgba(206,255,26,0)');
+        ctx.beginPath();
+        ctx.arc(cx,cy,r,0,Math.PI*2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  })();
+
+  let conversation = null;
+
+  const orbWrap = document.getElementById('orbWrap');
+  const orb = document.getElementById('orb');
+  const waveform = document.getElementById('waveform');
+  const orbLabel = document.getElementById('orbLabel');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const badgeText = document.getElementById('badgeText');
+  const transcriptBubble = document.getElementById('transcriptBubble');
+  const transcriptRole = document.getElementById('transcriptRole');
+  const transcriptText = document.getElementById('transcriptText');
+
+  function updateTranscript(role, text){
+    transcriptRole.textContent = role === 'user' ? 'U' : 'ADAM';
+    transcriptRole.className = role === 'user' ? 'transcript-role' : 'transcript-role agent-role';
+    transcriptText.textContent = text;
+    transcriptBubble.classList.add('visible');
+    transcriptBubble.scrollTop = transcriptBubble.scrollHeight;
   }
-  window.addEventListener('resize',resize);resize();draw();
-})();
 
-(function(){
-  const canvas=document.getElementById('orbCanvas'),ctx=canvas.getContext('2d');
-  let W=0,H=0,t=0;
-  function resize(){W=canvas.offsetWidth;H=canvas.offsetHeight;canvas.width=W;canvas.height=H;}
-  function draw(){
-    t+=.008;ctx.clearRect(0,0,W,H);
-    const base=ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,W*.5);
-    base.addColorStop(0,'#2a40f0');base.addColorStop(1,'#1020c0');
-    ctx.beginPath();ctx.arc(W*.5,H*.5,W*.5,0,Math.PI*2);ctx.fillStyle=base;ctx.fill();
-    const blobs=[{x:.35,y:.4,r:.28,s:.7},{x:.6,y:.55,r:.22,s:.5},{x:.45,y:.65,r:.18,s:.9}];
-    blobs.forEach((b,i)=>{
-      const cx=(b.x+Math.sin(t*b.s+i)*0.15)*W,cy=(b.y+Math.cos(t*b.s+i)*0.12)*H,r=b.r*W;
-      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
-      g.addColorStop(0,'rgba(206,255,26,0.55)');g.addColorStop(.4,'rgba(206,255,26,0.18)');g.addColorStop(1,'rgba(206,255,26,0)');
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  window.addEventListener('resize',resize);resize();draw();
-})();
+  async function startConversation() {
+    try {
+      await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
 
-setTimeout(()=>{
-  document.getElementById('transcriptBubble').classList.add('visible');
-},600);
+      orbLabel.textContent = 'Verbinden...';
+      statusText.textContent = 'Verbinden...';
+      badgeText.textContent = 'Verbinden...';
 
-let conversation = null;
+      conversation = await window.ElevenLabsConversation.startSession({
+        agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f',
 
-async function startConversation() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }
-    });
+        onConnect: () => {
+          statusDot.className = 'nav-status-dot ready';
+          statusText.textContent = 'Verbonden';
+          orbLabel.textContent = 'Luisteren...';
+          orbLabel.className = 'orb-label active-label';
+          badgeText.textContent = 'Klik nogmaals om te stoppen';
+        },
 
-    startMicMonitor(stream);
-
-    document.getElementById('orbLabel').textContent = 'Verbinden...';
-    document.getElementById('statusText').textContent = 'Verbinden...';
-    document.getElementById('badgeText').textContent = 'Verbinden...';
-
-    conversation = await window.ElevenLabsConversation.startSession({
-      agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f',
-
-      onConnect: () => {
-        document.getElementById('statusDot').classList.add('ready');
-        document.getElementById('statusText').textContent = 'Verbonden';
-        document.getElementById('orbLabel').textContent = 'Luisteren...';
-        document.getElementById('orbLabel').className = 'orb-label active-label';
-        document.getElementById('badgeText').textContent = 'Klik nogmaals om te stoppen';
-      },
-
-      onDisconnect: () => {
-        document.getElementById('statusDot').className = 'nav-status-dot';
-        document.getElementById('statusText').textContent = 'Klik om te starten';
-        document.getElementById('orbLabel').textContent = 'Klik om te starten';
-        document.getElementById('orbLabel').className = 'orb-label';
-        document.getElementById('waveform').classList.remove('visible');
-        document.getElementById('orb').classList.remove('speaking');
-        document.getElementById('badgeText').textContent = 'Klik op de orb om te starten';
-        conversation = null;
-      },
-
-      onModeChange: (mode) => {
-        if (mode.mode === 'speaking') {
-          document.getElementById('waveform').classList.add('visible');
-          document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('speaking'));
-          document.getElementById('orb').classList.add('speaking');
-          document.getElementById('orbLabel').textContent = 'ADAM spreekt...';
-        } else {
-          document.getElementById('waveform').classList.remove('visible');
+        onDisconnect: () => {
+          statusDot.className = 'nav-status-dot';
+          statusText.textContent = 'Klik om te starten';
+          orbLabel.textContent = 'Klik om te starten';
+          orbLabel.className = 'orb-label';
+          waveform.classList.remove('visible');
+          orb.classList.remove('speaking');
           document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('speaking'));
-          document.getElementById('orb').classList.remove('speaking');
-          document.getElementById('orbLabel').textContent = 'Luisteren...';
+          badgeText.textContent = 'Klik op de orb om te starten';
+          conversation = null;
+        },
+
+        onModeChange: (mode) => {
+          if (mode.mode === 'speaking') {
+            waveform.classList.add('visible');
+            document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('speaking'));
+            orb.classList.add('speaking');
+            orbLabel.textContent = 'ADAM spreekt...';
+          } else {
+            waveform.classList.remove('visible');
+            document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('speaking'));
+            orb.classList.remove('speaking');
+            orbLabel.textContent = 'Luisteren...';
+          }
+        },
+
+        onMessage: (message) => {
+          if (message.message) {
+            updateTranscript(message.source === 'user' ? 'user' : 'agent', message.message);
+          }
+        },
+
+        onError: (error) => {
+          console.error('Agent error:', error);
+          orbLabel.textContent = 'Fout, probeer opnieuw';
+          orbLabel.className = 'orb-label';
+          badgeText.textContent = 'Er ging iets mis';
+          conversation = null;
         }
-      },
+      });
 
-      onMessage: (message) => {
-        if (message.message) {
-          document.getElementById('transcriptRole').textContent =
-            message.source === 'user' ? 'U' : 'ADAM';
-          document.getElementById('transcriptRole').className =
-            message.source === 'user' ? 'transcript-role' : 'transcript-role agent-role';
-          document.getElementById('transcriptText').textContent = message.message;
-          document.getElementById('transcriptBubble').classList.add('visible');
-        }
-      },
-
-      onError: (error) => {
-        console.error('Agent error:', error);
-        document.getElementById('orbLabel').textContent = 'Fout — probeer opnieuw';
-        document.getElementById('orbLabel').className = 'orb-label';
-        conversation = null;
-      }
-    });
-
-  } catch (err) {
-    console.error('Start error:', err);
-    alert('Starten van de voice agent is mislukt. Check console voor details.');
-    document.getElementById('orbLabel').textContent = 'Klik om te starten';
+    } catch (err) {
+      console.error('Start error:', err);
+      alert('Starten van de voice agent is mislukt. Check je microfooninstellingen in de browser.');
+      orbLabel.textContent = 'Klik om te starten';
+      orbLabel.className = 'orb-label';
+      statusText.textContent = 'Klik op de orb om te starten';
+      badgeText.textContent = 'Klik op de orb om te starten';
+    }
   }
-}
 
-async function stopConversation() {
-  if (conversation) {
-    await conversation.endSession();
-    conversation = null;
+  async function stopConversation() {
+    if (conversation) {
+      await conversation.endSession();
+      conversation = null;
+    }
   }
-}
 
-document.getElementById('orbWrap').addEventListener('click', () => {
-  if (!conversation) {
-    startConversation();
-  } else {
-    stopConversation();
-  }
-});
-
-const textInput = document.getElementById('textInput');
-const sendBtn = document.getElementById('sendBtn');
-
-async function sendTypedMessage() {
-  const text = textInput.value.trim();
-  if (!text || !conversation) return;
-
-  try {
-    if (typeof conversation.sendUserMessage === 'function') {
-      conversation.sendUserMessage(text);
-
-      document.getElementById('transcriptRole').textContent = 'U';
-      document.getElementById('transcriptRole').className = 'transcript-role';
-      document.getElementById('transcriptText').textContent = text;
-      document.getElementById('transcriptBubble').classList.add('visible');
-
-      textInput.value = '';
+  orbWrap.addEventListener('click', () => {
+    if (!conversation) {
+      startConversation();
     } else {
-      console.error('sendUserMessage is niet beschikbaar op deze SDK/conversation instance');
-      alert('Typen wordt door deze huidige ElevenLabs client nog niet ondersteund.');
+      stopConversation();
     }
-  } catch (err) {
-    console.error('Send text error:', err);
-  }
-}
-
-sendBtn.addEventListener('click', sendTypedMessage);
-
-textInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    sendTypedMessage();
-  }
-});
-
-function setExample(el) {
-  const text = el.textContent.trim();
-  const input = document.getElementById('textInput');
-  if (input) {
-    input.value = text;
-    input.focus();
-  }
-}
-
-function startMicMonitor(stream) {
-  try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    const audioContext = new AudioContextClass();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-
-    analyser.fftSize = 512;
-    source.connect(analyser);
-
-    const data = new Uint8Array(analyser.frequencyBinCount);
-
-    function checkLevel() {
-      analyser.getByteFrequencyData(data);
-
-      let sum = 0;
-      for (let i = 0; i < data.length; i++) {
-        sum += data[i];
-      }
-
-      const avg = sum / data.length;
-      console.log('Mic level:', Math.round(avg));
-
-      if (avg > 8) {
-        document.getElementById('orbLabel').textContent = 'Microfoon hoort je...';
-      }
-
-      if (audioContext.state !== 'closed') {
-        requestAnimationFrame(checkLevel);
-      }
-    }
-
-    checkLevel();
-
-    setTimeout(() => {
-      stream.getTracks().forEach(track => track.stop());
-      audioContext.close();
-    }, 2500);
-  } catch (err) {
-    console.error('Mic monitor error:', err);
-  }
-}
-
+  });
 </script>
 </body>
 </html>
