@@ -357,7 +357,19 @@ let conversation = null;
 
 async function startConversation() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.const stream = await navigator.mediaDevices.getUserMedia({
+    audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true
+  }
+});
+
+// snelle mic-debug
+startMicMonitor(stream);
+
+// permission check stream daarna weer sluiten
+stream.getTracks().forEach(track => track.stop());mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(track => track.stop());
     document.getElementById('orbLabel').textContent = 'Verbinden...';
     document.getElementById('statusText').textContent = 'Verbinden...';
@@ -416,11 +428,11 @@ async function startConversation() {
       }
     });
 
-  } catch (err) {
-    console.error(err);
-    alert('Microfoon toegang nodig om de agent te gebruiken.');
-    document.getElementById('orbLabel').textContent = 'Klik om te starten';
-  }
+    } catch (err) {
+      console.error('Start error:', err);
+      alert('Starten van de voice agent is mislukt. Check console voor details.');
+      document.getElementById('orbLabel').textContent = 'Klik om te starten';
+    }
 }
 
 async function stopConversation() {
@@ -479,6 +491,47 @@ function setExample(el) {
   if (input) {
     input.value = text;
     input.focus();
+  }
+}
+
+function startMicMonitor(stream) {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioContext = new AudioContextClass();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+
+    analyser.fftSize = 512;
+    source.connect(analyser);
+
+    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    function checkLevel() {
+      analyser.getByteFrequencyData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) {
+        sum += data[i];
+      }
+      const avg = sum / data.length;
+
+      console.log('Mic level:', Math.round(avg));
+
+      if (avg > 8) {
+        document.getElementById('orbLabel').textContent = 'Microfoon hoort je...';
+      }
+
+      if (audioContext.state !== 'closed') {
+        requestAnimationFrame(checkLevel);
+      }
+    }
+
+    checkLevel();
+
+    setTimeout(() => {
+      audioContext.close();
+    }, 2500);
+  } catch (err) {
+    console.error('Mic monitor error:', err);
   }
 }
 
