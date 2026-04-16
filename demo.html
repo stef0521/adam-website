@@ -357,26 +357,24 @@ let conversation = null;
 
 async function startConversation() {
   try {
-    const stream = await navigator.const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-    echoCancellation: true,
-    noiseSuppression: true,
-    autoGainControl: true
-  }
-});
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
 
-// snelle mic-debug
-startMicMonitor(stream);
+    startMicMonitor(stream);
 
-// permission check stream daarna weer sluiten
-stream.getTracks().forEach(track => track.stop());mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(track => track.stop());
+
     document.getElementById('orbLabel').textContent = 'Verbinden...';
     document.getElementById('statusText').textContent = 'Verbinden...';
     document.getElementById('badgeText').textContent = 'Verbinden...';
 
     conversation = await window.ElevenLabsConversation.startSession({
-      agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f', 
+      agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f',
 
       onConnect: () => {
         document.getElementById('statusDot').classList.add('ready');
@@ -413,8 +411,10 @@ stream.getTracks().forEach(track => track.stop());mediaDevices.getUserMedia({ au
 
       onMessage: (message) => {
         if (message.message) {
-          document.getElementById('transcriptRole').textContent = message.source === 'user' ? 'U' : 'ADAM';
-          document.getElementById('transcriptRole').className = message.source === 'user' ? 'transcript-role' : 'transcript-role agent-role';
+          document.getElementById('transcriptRole').textContent =
+            message.source === 'user' ? 'U' : 'ADAM';
+          document.getElementById('transcriptRole').className =
+            message.source === 'user' ? 'transcript-role' : 'transcript-role agent-role';
           document.getElementById('transcriptText').textContent = message.message;
           document.getElementById('transcriptBubble').classList.add('visible');
         }
@@ -428,11 +428,11 @@ stream.getTracks().forEach(track => track.stop());mediaDevices.getUserMedia({ au
       }
     });
 
-    } catch (err) {
-      console.error('Start error:', err);
-      alert('Starten van de voice agent is mislukt. Check console voor details.');
-      document.getElementById('orbLabel').textContent = 'Klik om te starten';
-    }
+  } catch (err) {
+    console.error('Start error:', err);
+    alert('Starten van de voice agent is mislukt. Check console voor details.');
+    document.getElementById('orbLabel').textContent = 'Klik om te starten';
+  }
 }
 
 async function stopConversation() {
