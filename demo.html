@@ -6,10 +6,10 @@
   <title>Praat met ADAM — AI Agent Demo</title>
   <meta name="description" content="Ervaar zelf hoe een ADAM agent werkt. Geen menu's, geen scripts. Stel een vraag en het gesprek begint."/>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
-  <script type="module">
-    import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client@0.0.5/+esm';
-    window.ElevenLabsConversation = Conversation;
-  </script>
+<script type="module">
+  import { Conversation } from 'https://esm.sh/@elevenlabs/client';
+  window.ElevenLabsConversation = Conversation;
+</script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     :root{--blue:#1D2ED8;--yellow:#CEFF1A;--black:#0A0A0A;--white:#FFFFFF;--gray:#E5E7EB;--gray-mid:#9CA3AF;}
@@ -125,6 +125,67 @@
       .orb-wrap{width:140px;height:140px;}
       .orb{width:140px;height:140px;}
     }
+
+    .text-input-wrap{
+  position:absolute;
+  bottom:140px;
+  left:50%;
+  transform:translateX(-50%);
+  width:540px;
+  max-width:calc(100% - 80px);
+  display:flex;
+  gap:10px;
+  z-index:3;
+}
+
+.text-input{
+  flex:1;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  color:#fff;
+  padding:14px 16px;
+  border-radius:8px;
+  font-family:'Sora',sans-serif;
+  font-size:14px;
+  outline:none;
+}
+
+.text-input::placeholder{
+  color:rgba(255,255,255,0.35);
+}
+
+.text-input:focus{
+  border-color:rgba(206,255,26,0.45);
+}
+
+.send-btn{
+  background:#CEFF1A;
+  color:#0A0A0A;
+  border:none;
+  border-radius:8px;
+  padding:0 18px;
+  font-family:'Sora',sans-serif;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform 0.2s, opacity 0.2s;
+}
+
+.send-btn:hover{
+  transform:translateY(-1px);
+  opacity:0.95;
+}
+
+.send-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+@media (max-width: 768px){
+  .text-input-wrap{
+    width:calc(100% - 40px);
+    bottom:120px;
+  }
+}
   </style>
 </head>
 <body>
@@ -183,6 +244,17 @@
   <div class="right-panel">
     <canvas class="right-canvas" id="bgCanvas"></canvas>
 
+  <div class="text-input-wrap" id="textInputWrap">
+  <input
+      type="text"
+      id="textInput"
+      class="text-input"
+      placeholder="Typ je vraag aan ADAM..."
+      autocomplete="off"
+    />
+    
+    <button id="sendBtn" class="send-btn">Verstuur</button>
+  </div>
     <div class="orb-container">
       <div class="orb-wrap" id="orbWrap">
         <div class="orb-rings">
@@ -244,7 +316,6 @@
 </div>
 
 <script>
-
 console.log(Object.keys(window).filter(k => k.toLowerCase().includes('eleven')));
 
 (function(){
@@ -296,79 +367,207 @@ setTimeout(()=>{
 },600);
 
 let conversation = null;
+let isConnecting = false;
+
+const orbLabel = document.getElementById('orbLabel');
+const statusText = document.getElementById('statusText');
+const badgeText = document.getElementById('badgeText');
+const statusDot = document.getElementById('statusDot');
+const waveform = document.getElementById('waveform');
+const orb = document.getElementById('orb');
+const transcriptBubble = document.getElementById('transcriptBubble');
+const transcriptRole = document.getElementById('transcriptRole');
+const transcriptText = document.getElementById('transcriptText');
+const textInput = document.getElementById('textInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function setUIState(state) {
+  switch (state) {
+    case 'idle':
+      statusDot.className = 'nav-status-dot';
+      statusText.textContent = 'Klik op de orb om te starten';
+      orbLabel.textContent = 'Klik om te starten';
+      orbLabel.className = 'orb-label';
+      badgeText.textContent = 'Klik op de orb om te starten';
+      waveform.classList.remove('visible');
+      orb.classList.remove('speaking');
+      document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('speaking'));
+      sendBtn.disabled = true;
+      break;
+
+    case 'connecting':
+      statusText.textContent = 'Verbinden...';
+      orbLabel.textContent = 'Verbinden...';
+      orbLabel.className = 'orb-label active-label';
+      badgeText.textContent = 'Verbinden...';
+      sendBtn.disabled = true;
+      break;
+
+    case 'connected':
+      statusDot.className = 'nav-status-dot ready';
+      statusText.textContent = 'Verbonden';
+      orbLabel.textContent = 'Luisteren...';
+      orbLabel.className = 'orb-label active-label';
+      badgeText.textContent = 'Klik nogmaals om te stoppen';
+      sendBtn.disabled = false;
+      break;
+
+    case 'speaking':
+      waveform.classList.add('visible');
+      orb.classList.add('speaking');
+      document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('speaking'));
+      orbLabel.textContent = 'ADAM spreekt...';
+      sendBtn.disabled = false;
+      break;
+
+    case 'listening':
+      waveform.classList.remove('visible');
+      orb.classList.remove('speaking');
+      document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('speaking'));
+      orbLabel.textContent = 'Luisteren...';
+      sendBtn.disabled = false;
+      break;
+
+    case 'error':
+      statusDot.className = 'nav-status-dot';
+      statusText.textContent = 'Er ging iets mis';
+      orbLabel.textContent = 'Fout, probeer opnieuw';
+      orbLabel.className = 'orb-label';
+      badgeText.textContent = 'Controleer microfoon / agent';
+      sendBtn.disabled = true;
+      break;
+  }
+}
+
+function showTranscript(role, text) {
+  transcriptRole.textContent = role === 'user' ? 'U' : 'ADAM';
+  transcriptRole.className = role === 'user' ? 'transcript-role' : 'transcript-role agent-role';
+  transcriptText.textContent = text;
+  transcriptBubble.classList.add('visible');
+}
+
+window.setExample = function(el) {
+  const text = el.textContent.trim();
+  textInput.value = text;
+  textInput.focus();
+
+  if (conversation && typeof conversation.sendUserActivity === 'function') {
+    conversation.sendUserActivity();
+  }
+};
+
+async function requestMicAccess() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('Deze browser ondersteunt geen microfoon toegang.');
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+  // stop de permission-check stream direct, de SDK opent daarna zelf de echte stream
+  stream.getTracks().forEach(track => track.stop());
+}
 
 async function startConversation() {
-  try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
+  if (conversation || isConnecting) return;
 
-    document.getElementById('orbLabel').textContent = 'Verbinden...';
-    document.getElementById('statusText').textContent = 'Verbinden...';
-    document.getElementById('badgeText').textContent = 'Verbinden...';
+  isConnecting = true;
+  setUIState('connecting');
+
+  try {
+    await requestMicAccess();
 
     conversation = await window.ElevenLabsConversation.startSession({
-      agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f', 
+      agentId: 'agent_1601kp5nmptxes69zmg0xk5m8g6f',
+      connectionType: 'webrtc',
 
       onConnect: () => {
-        document.getElementById('statusDot').classList.add('ready');
-        document.getElementById('statusText').textContent = 'Verbonden';
-        document.getElementById('orbLabel').textContent = 'Luisteren...';
-        document.getElementById('orbLabel').className = 'orb-label active-label';
-        document.getElementById('badgeText').textContent = 'Klik nogmaals om te stoppen';
+        setUIState('connected');
       },
 
       onDisconnect: () => {
-        document.getElementById('statusDot').className = 'nav-status-dot';
-        document.getElementById('statusText').textContent = 'Klik om te starten';
-        document.getElementById('orbLabel').textContent = 'Klik om te starten';
-        document.getElementById('orbLabel').className = 'orb-label';
-        document.getElementById('waveform').classList.remove('visible');
-        document.getElementById('orb').classList.remove('speaking');
-        document.getElementById('badgeText').textContent = 'Klik op de orb om te starten';
         conversation = null;
+        isConnecting = false;
+        setUIState('idle');
+      },
+
+      onStatusChange: (status) => {
+        console.log('Status:', status);
       },
 
       onModeChange: (mode) => {
-        if (mode.mode === 'speaking') {
-          document.getElementById('waveform').classList.add('visible');
-          document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('speaking'));
-          document.getElementById('orb').classList.add('speaking');
-          document.getElementById('orbLabel').textContent = 'ADAM spreekt...';
-        } else {
-          document.getElementById('waveform').classList.remove('visible');
-          document.querySelectorAll('.wave-bar').forEach(b => b.classList.remove('speaking'));
-          document.getElementById('orb').classList.remove('speaking');
-          document.getElementById('orbLabel').textContent = 'Luisteren...';
+        console.log('Mode:', mode);
+
+        const currentMode = typeof mode === 'string' ? mode : mode?.mode;
+
+        if (currentMode === 'speaking') {
+          setUIState('speaking');
+        } else if (currentMode === 'listening') {
+          setUIState('listening');
         }
       },
 
       onMessage: (message) => {
-        if (message.message) {
-          document.getElementById('transcriptRole').textContent = message.source === 'user' ? 'U' : 'ADAM';
-          document.getElementById('transcriptRole').className = message.source === 'user' ? 'transcript-role' : 'transcript-role agent-role';
-          document.getElementById('transcriptText').textContent = message.message;
-          document.getElementById('transcriptBubble').classList.add('visible');
-        }
+        console.log('Message:', message);
+
+        const text =
+          message?.message ||
+          message?.text ||
+          message?.content ||
+          '';
+
+        if (!text) return;
+
+        const source =
+          message?.source === 'user' || message?.role === 'user'
+            ? 'user'
+            : 'agent';
+
+        showTranscript(source, text);
       },
 
       onError: (error) => {
         console.error('Agent error:', error);
-        document.getElementById('orbLabel').textContent = 'Fout — probeer opnieuw';
-        document.getElementById('orbLabel').className = 'orb-label';
-        conversation = null;
+        setUIState('error');
       }
     });
 
+    isConnecting = false;
   } catch (err) {
-    console.error(err);
-    alert('Microfoon toegang nodig om de agent te gebruiken.');
-    document.getElementById('orbLabel').textContent = 'Klik om te starten';
+    console.error('Start error:', err);
+    isConnecting = false;
+    conversation = null;
+    setUIState('error');
+
+    alert(
+      'Microfoon kon niet worden gestart. Controleer browserrechten, microfoonkeuze en of deze pagina via https draait.'
+    );
   }
 }
 
 async function stopConversation() {
-  if (conversation) {
-    await conversation.endSession();
+  try {
+    if (conversation) {
+      await conversation.endSession();
+    }
+  } catch (err) {
+    console.error('Stop error:', err);
+  } finally {
     conversation = null;
+    isConnecting = false;
+    setUIState('idle');
+  }
+}
+
+async function sendTypedMessage() {
+  const text = textInput.value.trim();
+  if (!text || !conversation) return;
+
+  try {
+    showTranscript('user', text);
+    conversation.sendUserMessage(text);
+    textInput.value = '';
+  } catch (err) {
+    console.error('Send text error:', err);
   }
 }
 
@@ -379,6 +578,23 @@ document.getElementById('orbWrap').addEventListener('click', () => {
     stopConversation();
   }
 });
+
+sendBtn.addEventListener('click', sendTypedMessage);
+
+textInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendTypedMessage();
+  }
+});
+
+textInput.addEventListener('input', () => {
+  if (conversation && typeof conversation.sendUserActivity === 'function') {
+    conversation.sendUserActivity();
+  }
+});
+
+setUIState('idle');
 </script>
 </body>
 </html>
