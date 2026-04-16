@@ -367,8 +367,6 @@ async function startConversation() {
 
     startMicMonitor(stream);
 
-    stream.getTracks().forEach(track => track.stop());
-
     document.getElementById('orbLabel').textContent = 'Verbinden...';
     document.getElementById('statusText').textContent = 'Verbinden...';
     document.getElementById('badgeText').textContent = 'Verbinden...';
@@ -508,12 +506,13 @@ function startMicMonitor(stream) {
 
     function checkLevel() {
       analyser.getByteFrequencyData(data);
+
       let sum = 0;
       for (let i = 0; i < data.length; i++) {
         sum += data[i];
       }
-      const avg = sum / data.length;
 
+      const avg = sum / data.length;
       console.log('Mic level:', Math.round(avg));
 
       if (avg > 8) {
@@ -528,6 +527,7 @@ function startMicMonitor(stream) {
     checkLevel();
 
     setTimeout(() => {
+      stream.getTracks().forEach(track => track.stop());
       audioContext.close();
     }, 2500);
   } catch (err) {
