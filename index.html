@@ -644,8 +644,7 @@ document.getElementById('hamburger').addEventListener('click',()=>{
 });
 window.addEventListener('scroll',()=>{
   const nav=document.querySelector('.nav');
-  if(window.scrollY > document.getElementById('hero').offsetHeight - 72){
-    nav.classList.add('scrolled');
+  if(window.scrollY > 10){    nav.classList.add('scrolled');
   } else {
     nav.classList.remove('scrolled');
   }
