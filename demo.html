@@ -1112,6 +1112,18 @@
       stopConversation();
     }
   });
+
+  // Auto-start when navigated from homepage orb (?autostart=1)
+  if (new URLSearchParams(window.location.search).get('autostart') === '1') {
+    const tryAutoStart = () => {
+      if (window.ElevenLabsConversation) {
+        startConversation();
+      } else {
+        setTimeout(tryAutoStart, 200);
+      }
+    };
+    setTimeout(tryAutoStart, 600);
+  }
 </script>
 </body>
 </html>
