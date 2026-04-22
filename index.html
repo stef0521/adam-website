@@ -499,8 +499,15 @@
       .proof-quote-mark{font-size:48px;}
       .wie-grid{grid-template-columns:1fr;gap:48px;}
       .wie-cards{grid-template-columns:1fr 1fr;}
-      .demo-inner{grid-template-columns:1fr;gap:48px;}
-      .demo-right{display:none;}
+      /* Orb tonen op mobiel maar kleiner en gecentreerd */
+      .demo-inner{grid-template-columns:1fr;gap:40px;}
+      .demo-right{display:flex;justify-content:center;margin-top:8px;}
+      .orb-preview{width:160px;height:160px;}
+      .orb-preview-ball{width:160px;height:160px;}
+      .orb-preview-label{font-size:10px;bottom:-36px;}
+      /* Wie wij zijn donker blok: inline grids naar 1 kolom */
+      .wie-dark-cols{grid-template-columns:1fr !important;}
+      .wie-dark-cards{grid-template-columns:1fr 1fr !important;}
       .cta-buttons{flex-direction:column;align-items:stretch;}
       .cta-btn-primary,.cta-btn-secondary{text-align:center;}
       footer{flex-direction:column;gap:20px;text-align:center;padding:24px 20px;}
@@ -511,7 +518,10 @@
     @media(max-width:480px){
       .hero-title{font-size:clamp(34px,11vw,52px);}
       .wie-cards{grid-template-columns:1fr;}
+      .wie-dark-cards{grid-template-columns:1fr !important;}
       .how-steps{grid-template-columns:1fr;}
+      .orb-preview{width:140px;height:140px;}
+      .orb-preview-ball{width:140px;height:140px;}
     }
   </style>
 </head>
@@ -672,14 +682,14 @@
       </div>
 
       <!-- Twee kolommen: tekst links, kaartjes rechts -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;" class="stagger">
+      <div class="wie-dark-cols stagger" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;">
         <div>
           <p style="font-size:16px;color:rgba(255,255,255,0.65);line-height:1.8;margin-bottom:18px;">ADAM is geen generiek AI-bureau. Onze wortels liggen in audio technologie, sound design en voice interfaces. Dat maakt het verschil in hoe wij agents ontwerpen.</p>
           <p style="font-size:16px;color:rgba(255,255,255,0.65);line-height:1.8;margin-bottom:18px;">Wij begrijpen hoe gesprekken werken. Niet alleen de woorden, maar de toon, het ritme, de pauze. Die kennis zit ingebakken in elke agent die wij bouwen.</p>
           <p style="font-size:16px;color:rgba(255,255,255,0.65);line-height:1.8;margin-bottom:32px;">Gevestigd in Groningen, actief voor organisaties door heel Nederland.</p>
           <a href="about.html" style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--yellow);text-decoration:none;border-bottom:1px solid rgba(206,255,26,0.3);padding-bottom:4px;transition:gap 0.2s;">Meer over ons →</a>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+        <div class="wie-dark-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
           <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-top:3px solid var(--yellow);padding:28px 24px;">
             <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px;">Audio & voice expertise</div>
             <p style="font-size:13px;color:rgba(255,255,255,0.48);line-height:1.6;">Jarenlange ervaring in sound design en voice interfaces vormt de basis van onze aanpak.</p>
